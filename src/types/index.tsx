@@ -79,6 +79,7 @@ export interface ApiResponse<T> {
   filters?: { subCategories: string[] };
   pagination?: Pagination;
   message?: string;
+  imageUrl?: string;
 }
 
 

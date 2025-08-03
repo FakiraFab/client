@@ -63,6 +63,21 @@ const ProductDetailsPage: React.FC = () => {
     }
   }, [product, selectedVariant]);
 
+
+  useEffect(() => {
+  if (currentImages.length > 1) {
+    const interval = setInterval(() => {
+      // Only autoplay on mobile screens
+      if (window.innerWidth < 1024) {
+        setSelectedImage(prev => (prev + 1) % currentImages.length);
+      }
+    }, 3000); // Change image every 3 seconds
+
+    return () => clearInterval(interval);
+  }
+}, [currentImages.length]);
+  
+
   const handleQuantityChange = (change: number) => {
     setQuantity(prev => Math.max(1, prev + change));
   };
@@ -189,33 +204,100 @@ const ProductDetailsPage: React.FC = () => {
       {/* Product Details */}
       <div className="container mx-auto px-6 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-          {/* Product Images */}
-          <div className="space-y-4">
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-              <img
-                src={currentImages[selectedImage] || product.imageUrl || 'https://via.placeholder.com/400'}
-                alt={product.name}
-                className="w-full h-96 object-contain"
-              />
-            </div>
-            <div className="flex space-x-2 overflow-x-auto">
-              {currentImages.map((image, index) => (
-                <button
-                  key={index}
-                  onClick={() => setSelectedImage(index)}
-                  className={`flex-shrink-0 w-20 h-20 rounded-lg border-2 overflow-hidden ${
-                    selectedImage === index ? 'border-red-600' : 'border-gray-200'
-                  }`}
-                >
-                  <img
-                    src={image || 'https://via.placeholder.com/80'}
-                    alt={`${product.name} ${index + 1}`}
-                    className="w-full h-full object-contain"
-                  />
-                </button>
-              ))}
-            </div>
-          </div>
+        
+
+
+
+
+{/* Product Images */}
+<div>
+  {/* Desktop Layout - Thumbnail Strip + Main Image */}
+  <div className="hidden lg:flex gap-4">
+    {/* Thumbnail Strip - Left Side */}
+    <div className="flex flex-col gap-3 w-20">
+      {currentImages.map((image, index) => (
+        <button
+          key={index}
+          onClick={() => setSelectedImage(index)}
+          className={`w-20 h-20 rounded-lg border-2 overflow-hidden flex-shrink-0 ${
+            selectedImage === index ? 'border-red-600' : 'border-gray-200'
+          }`}
+        >
+          <img
+            src={image || 'https://via.placeholder.com/80'}
+            alt={`${product.name} ${index + 1}`}
+            className="w-full h-full object-contain"
+          />
+        </button>
+      ))}
+    </div>
+
+    {/* Main Image - Right Side */}
+    <div className="flex-1">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+        <img
+          src={currentImages[selectedImage] || product.imageUrl || 'https://via.placeholder.com/400'}
+          alt={product.name}
+          className="w-full h-full object-contain"
+        />
+      </div>
+    </div>
+  </div>
+
+  {/* Mobile Layout - Autoplay Carousel */}
+  <div className="lg:hidden">
+    <div className="relative bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+      <img
+        src={currentImages[selectedImage] || product.imageUrl || 'https://via.placeholder.com/400'}
+        alt={product.name}
+        className="w-full h-80 object-contain"
+      />
+      
+      {/* Carousel Indicators */}
+      {currentImages.length > 1 && (
+        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
+          {currentImages.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => setSelectedImage(index)}
+              className={`w-2 h-2 rounded-full transition-colors ${
+                selectedImage === index ? 'bg-white' : 'bg-white/50'
+              }`}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* Image Counter */}
+      {currentImages.length > 1 && (
+        <div className="absolute top-4 right-4 bg-black/60 text-white px-2 py-1 rounded-full text-xs">
+          {selectedImage + 1} / {currentImages.length}
+        </div>
+      )}
+    </div>
+
+    {/* Mobile Thumbnail Strip (Optional - for manual navigation) */}
+    {currentImages.length > 1 && (
+      <div className="flex space-x-2 mt-4 overflow-x-auto pb-2">
+        {currentImages.map((image, index) => (
+          <button
+            key={index}
+            onClick={() => setSelectedImage(index)}
+            className={`flex-shrink-0 w-16 h-16 rounded-lg border-2 overflow-hidden ${
+              selectedImage === index ? 'border-red-600' : 'border-gray-200'
+            }`}
+          >
+            <img
+              src={image || 'https://via.placeholder.com/64'}
+              alt={`${product.name} ${index + 1}`}
+              className="w-full h-full object-contain"
+            />
+          </button>
+        ))}
+      </div>
+    )}
+  </div>
+</div>         
 
           {/* Product Info */}
           <div className="space-y-6">

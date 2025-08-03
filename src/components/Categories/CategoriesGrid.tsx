@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 
 interface Category {
   id: string;
@@ -16,25 +17,63 @@ interface CategoriesGridProps {
 
 const CategoriesGrid: React.FC<CategoriesGridProps> = ({ categories, title = "Category's" }) => {
   const navigate = useNavigate();
-  console.log(categories)
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  console.log(categories);
 
   const handleCategoryClick = (categoryId: string) => {
     navigate(`/category/${categoryId}`);
   };
 
+  // Scroll left
+  const scrollLeft = () => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollBy({ left: -300, behavior: 'smooth' });
+    }
+  };
+
+  // Scroll right
+  const scrollRight = () => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollBy({ left: 300, behavior: 'smooth' });
+    }
+  };
+
   return (
     <section className="py-16 bg-white">
       <div className="container mx-auto px-4">
-        <div className="mb-12">
-          <h2 className="text-4xl font-bold text-gray-900 mb-4">{title}</h2>
+        <div className="mb-12 flex items-center justify-between">
+          <h2 className="text-4xl font-bold text-gray-900">{title}</h2>
+          {/* Arrow Buttons for Desktop */}
+          <div className="hidden sm:flex space-x-2">
+            <button
+              onClick={scrollLeft}
+              className="p-2 bg-white rounded-full shadow-lg hover:bg-gray-100 transition-colors duration-200"
+              aria-label="Scroll left"
+            >
+              <ChevronLeftIcon className="w-6 h-6 text-gray-600" />
+            </button>
+            <button
+              onClick={scrollRight}
+              className="p-2 bg-white rounded-full shadow-lg hover:bg-gray-100 transition-colors duration-200"
+              aria-label="Scroll right"
+            >
+              <ChevronRightIcon className="w-6 h-6 text-gray-600" />
+            </button>
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        {/* Scrollable Categories Container */}
+        <div
+          ref={scrollRef}
+          className="flex overflow-x-auto scrollbar-hide space-x-6 snap-x snap-mandatory pb-4"
+          style={{ scrollSnapType: 'x mandatory' }}
+        >
           {categories.map((category) => (
             <div
               key={category.id}
               onClick={() => handleCategoryClick(category.id)}
-              className="relative h-80 rounded-2xl overflow-hidden cursor-pointer group shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2"
+              className="relative flex-shrink-0 w-80 h-80 rounded-2xl overflow-hidden cursor-pointer group shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 snap-center"
             >
               <img
                 src={category.image}
@@ -54,12 +93,33 @@ const CategoriesGrid: React.FC<CategoriesGridProps> = ({ categories, title = "Ca
                     {category.discount}
                   </span>
                 )}
-                <button onClick={()=>handleCategoryClick(category.id)} className="w-full bg-red-900 hover:bg-red-800 text-white py-3 rounded-lg font-semibold transition-colors duration-200 cursor-pointer">
+                <button
+                  onClick={() => handleCategoryClick(category.id)}
+                  className="w-full bg-red-900 hover:bg-red-800 text-white py-3 rounded-lg font-semibold transition-colors duration-200 cursor-pointer"
+                >
                   Explore
                 </button>
               </div>
             </div>
           ))}
+        </div>
+
+        {/* Arrow Buttons for Mobile */}
+        <div className="flex sm:hidden justify-center space-x-4 mt-4">
+          <button
+            onClick={scrollLeft}
+            className="p-2 bg-white rounded-full shadow-lg hover:bg-gray-100 transition-colors duration-200"
+            aria-label="Scroll left"
+          >
+            <ChevronLeftIcon className="w-6 h-6 text-gray-600" />
+          </button>
+          <button
+            onClick={scrollRight}
+            className="p-2 bg-white rounded-full shadow-lg hover:bg-gray-100 transition-colors duration-200"
+            aria-label="Scroll right"
+          >
+            <ChevronRightIcon className="w-6 h-6 text-gray-600" />
+          </button>
         </div>
       </div>
     </section>
