@@ -14,6 +14,7 @@ interface NewArrivalsProps {
 }
 
 const NewArrivals: React.FC<NewArrivalsProps> = ({ products }) => {
+  console.log('New Arrivals Products:', products);
   return (
     <section className="py-16 bg-gray-50">
       <div className="container mx-auto px-4">
