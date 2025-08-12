@@ -9,8 +9,10 @@ export interface ProductOption {
 export interface ProductVariant {
   id: string;
   color: string;
-  colorCode: string;
-  image: string;
+  colorCode: string;    
+  images: string[];
+  quantity: number;
+  price: number;
 }
 
 export interface ProductSpecifications {
@@ -93,4 +95,42 @@ export interface Enquiry {
   userName: string;
   userEmail: string;
   message?: string;
+  buyOption: 'Personal' | 'Wholesale' | 'Other';
+  location: string;
+  companyName?: string;
+}
+
+export interface Reel {
+  _id: string;
+  title: string;
+  description?: string;
+  videoUrl: string;
+  thumbnailUrl?: string;
+  price?: number;
+  isActive: boolean;
+  order: number;
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
+}
+
+export interface Banner {
+  _id: string;
+  title?: string;
+  description?: string;
+  image: string;
+  ctaText?: string;
+  ctaLink?: string;
+  isActive: boolean;
+  order: number;
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
+}
+
+export interface BannerResponse {
+  data: Banner[];
+  currentPage: number;
+  totalPages: number;
+  totalItems: number;
 }

@@ -19,6 +19,7 @@ const Header: React.FC = () => {
 
   const navigationItems = [
     { name: 'Home', href: '/' },
+    { name: 'All Products', href: 'all-products' },
     { name: 'Categories', href: 'category' },
     { name: 'Workshops', href: 'workshops' },
     { name: 'About Us', href: 'about' }
@@ -27,10 +28,10 @@ const Header: React.FC = () => {
   const categories = [
     'Sarees',
     'Dress Materials',
-    'Dupattas',
+    'dupattas',
     'Suits',
     'Bed Sheets',
-    'Cut Pieces',
+    'Cut pieces',
     'Fabrics'
   ];
 
@@ -150,7 +151,7 @@ const Header: React.FC = () => {
             {categories.map((category) => (
               <Link
                 key={category}
-                to={`/category/${category.toLowerCase().replace(' ', '-')}`}
+                to={`/category/${category}`}
                 className="text-xs font-medium text-gray-600 hover:text-red-700 transition-colors duration-200 uppercase tracking-wider"
               >
                 {category}
@@ -222,7 +223,7 @@ const Header: React.FC = () => {
                   {categories.map((category) => (
                     <Link
                       key={category}
-                      to={`/category/${category.toLowerCase().replace(' ', '-')}`}
+                      to={`/category/${category}`}
                       className="text-sm py-2 px-3 bg-gray-50 hover:bg-red-50 text-gray-700 hover:text-red-700 rounded-md transition-colors duration-200 flex items-center"
                       onClick={() => setIsMenuOpen(false)}
                     >

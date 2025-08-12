@@ -3,18 +3,45 @@ import InstagramReels from '../components/InstagramReels/InstgramReels';
 import NewArrivals from '../components/NewArrivals/NewArrivals';
 import CategoriesGrid from '../components/Categories/CategoriesGrid';
 import ProductsByCategory from '../components/ProductByCategory/ProductByCategory';
-import WorkRegistration from '../components/WorkRegistration/WorkRegistration';
+
 import SupportArtisans from '../components/SupportArtisans/SupportArtisans';
 import Carousel from '../components/Carousel/Carousel';
 import { useNavigate } from 'react-router-dom';
 import apiClient from '../api/client';
 import { useQuery } from '@tanstack/react-query';
-import type { Category, Product } from '../types';
+import type { Category, Product, Reel, Banner, ApiResponse } from '../types';
+import { fetchActiveReels } from '../api/products';
+import { fetchActiveBanners } from '../api/banners';
+import WorkshopSection from '../components/WorkshopSection/WorkshopSection';
+import { 
+  HeroSkeleton, 
+  ReelsGridSkeleton, 
+  ProductGridSkeleton, 
+  CategoriesGridSkeleton 
+} from '../components/SkeletonLoader';
 
 // Fetch categories
 const fetchCategories = async ():Promise<Category[]> => {
-  const res = await apiClient.get('/categories');
+  //we need to pass the limit to the categories api
+  const res = await apiClient.get('/categories', {
+    params: {
+      limit: 20,
+    }
+  });
   return res.data.data;
+};
+
+// Fetch products by category
+const fetchProductsByCategory = async (categoryId: string, limit: number = 4): Promise<ApiResponse<Product[]>> => {
+  const res = await apiClient.get(`/products`, {
+    params: {
+      category: categoryId,
+      limit: limit,
+      sort: '-createdAt'
+    }
+  });
+  // console.log('Fetched Products by Category:', res.data.data);
+  return res.data;
 };
 
 // Fetch new arrivals
@@ -31,147 +58,77 @@ const fetchNewArrivals = async ():Promise<Product[]> => {
       limit: 4,
     },
   });
-  console.log('Fetched New Arrivals:', res.data.data);
+  // console.log('Fetched New Arrivals:', res.data.data);
   return res.data.data;
+};
+
+// Fetch active reels
+const fetchReels = async (): Promise<Reel[]> => {
+  const res = await fetchActiveReels();
+  return res.data;
 };
 
 const HomePage: React.FC = () => {
   const navigate = useNavigate();
 
-  // Carousel data (unchanged)
-  const carouselData = [
-    {
-      id: '1',
-      image: 'https://shopmulmul.com/cdn/shop/files/b_6.jpg?v=1752839478&width=1800',
-      ctaText: 'SHOP NOW',
-      ctaLink: '#',
-    },
-    {
-      id: '2',
-      image: 'https://shopmulmul.com/cdn/shop/files/b_5.jpg?v=1752839478&width=1800',
-      ctaText: 'SHOP NOW',
-      ctaLink: '#',
-    },
-    {
-      id: '3',
-      image: 'https://shopmulmul.com/cdn/shop/files/b_2.jpg?v=1752839478&width=1800',
-      ctaText: 'SHOP NOW',
-      ctaLink: '#',
-    },
-  ];
+  // Fetch banners
+  const { data: bannersData = [] as Banner[], isLoading: bannersLoading } = useQuery({
+    queryKey: ['banners'],
+    queryFn: fetchActiveBanners,
+  });
 
-  // Sample data for Instagram Reels (unchanged)
-  const reelsData = [
-    {
-      id: '1',
-      title: 'Bird Block Printed best Cotton Fabric',
-      price: '₹276',
-      image: 'https://cdn.shopify.com/videos/c/vp/2345a3fec28b4ece9bcbe807c62fdb25/2345a3fec28b4ece9bcbe807c62fdb25.HD-1080p-7.2Mbps-49954218.mp4',
-      isVideo: true,
-    },
-    {
-      id: '2',
-      title: 'Bird Block Printed best Cotton Fabric',
-      price: '₹276',
-      image: 'https://cdn.shopify.com/videos/c/vp/e5282c31259042978ff302ba75a321f3/e5282c31259042978ff302ba75a321f3.HD-1080p-4.8Mbps-49954706.mp4',
-      isVideo: true,
-    },
-    {
-      id: '3',
-      title: 'Bird Block Printed best Cotton Fabric',
-      price: '₹276',
-      image: 'https://cdn.shopify.com/videos/c/vp/094b53fa4923489ebd388d9eeb9b7061/094b53fa4923489ebd388d9eeb9b7061.HD-1080p-7.2Mbps-49954705.mp4',
-      isVideo: true,
-    },
-    {
-      id: '4',
-      title: 'Bird Block Printed best Cotton Fabric',
-      price: '₹276',
-      image: 'https://cdn.shopify.com/videos/c/vp/bebe663301934bda950482304bee24f9/bebe663301934bda950482304bee24f9.HD-1080p-7.2Mbps-49954704.mp4',
-      isVideo: true,
-    },
-  ];
-
-  // Sample data for Fabric Collections (unchanged)
-  const fabricCollectionsData = [
-    {
-      id: '1',
-      name: 'Banjara print blue fabric cotton',
-      price: 2300,
-      image: 'https://www.matkatus.com/cdn/shop/files/DS51A_45c0ed31-da46-4825-8776-8d0aac073246.jpg?v=1751864592&width=720',
-      stockLeft: 36,
-    },
-    {
-      id: '2',
-      name: 'Banjara print blue fabric cotton',
-      price: 2300,
-      image: 'https://www.matkatus.com/cdn/shop/files/DS53B_cd9c3c61-0307-41f9-9f9b-a3d975667c18.jpg?v=1751864592&width=720',
-      stockLeft: 36,
-    },
-    {
-      id: '3',
-      name: 'Banjara print blue fabric cotton',
-      price: 2300,
-      image: 'https://www.matkatus.com/cdn/shop/files/DS46B_d2901a40-b295-4158-85bc-9d929c62f3f4.jpg?v=1751864586&width=720',
-      stockLeft: 36,
-    },
-    {
-      id: '4',
-      name: 'Banjara print blue fabric cotton',
-      price: 2300,
-      image: 'https://www.matkatus.com/cdn/shop/files/DS61B_1a05e460-0e87-4136-a9bc-cbe90b6a7ed2.jpg?v=1751864578&width=720',
-      stockLeft: 36,
-    },
-  ];
-
-  // Sample data for Dupattas (unchanged)
-  const dupattasData = [
-    {
-      id: '1',
-      name: 'Banjara print blue fabric cotton',
-      price: 2300,
-      image: 'https://www.matkatus.com/cdn/shop/files/ad-150-2_4fa23484-0724-4109-af32-29d9948e5efe.jpg?v=1750846359&width=720',
-      stockLeft: 36,
-    },
-    {
-      id: '2',
-      name: 'Banjara print blue fabric cotton',
-      price: 2300,
-      image: 'https://www.matkatus.com/cdn/shop/files/ad30ad31DSC08703_57ba7130-f885-48be-8847-2e749ee22fd4.jpg?v=1750845539&width=1080',
-      stockLeft: 36,
-    },
-    {
-      id: '3',
-      name: 'Banjara print blue fabric cotton',
-      price: 2300,
-      image: 'https://www.matkatus.com/cdn/shop/files/ad22_5a317f5a-fbba-4172-8050-84658d003814.png?v=1750845551&width=1080',
-      stockLeft: 36,
-    },
-    {
-      id: '4',
-      name: 'Banjara print blue fabric cotton',
-      price: 2300,
-      image: 'https://www.matkatus.com/cdn/shop/files/ad2_fbaccb08-5c2b-4828-be29-2ac0f274418f.png?v=1750845517&width=1080',
-      stockLeft: 36,
-    },
-  ];
+  //console.log('Banners Data:', bannersData);
 
   // Fetch categories
   const { data: categoriesData = [] as Category[], isLoading: categoriesLoading } = useQuery({
     queryKey: ['categories'],
     queryFn: fetchCategories,
-    suspense: true,
+  });
+
+  //console.log('Categories Data:', categoriesData);
+
+  // Find specific categories for dynamic data
+  const fabricCategory = categoriesData.find(cat => 
+    cat.name.includes('dupattas') || 
+    cat.name.toLowerCase().includes('textile')
+  );
+//  console.log('Categories Data:', categoriesData);
+  
+  const dupattaCategory = categoriesData.find(cat => 
+    cat.name.toLowerCase().includes('sarees') || 
+    cat.name.toLowerCase().includes('stole')
+  );
+  //console.log('Fabric Category:', fabricCategory);
+  //console.log('Dupatta Category:', dupattaCategory);
+
+  // Fetch products for Fabric Collections
+  const { data: fabricProductsData = { data: [] }, isLoading: fabricLoading } = useQuery({
+    queryKey: ['fabricProducts', fabricCategory?._id],
+    queryFn: () => fetchProductsByCategory(fabricCategory?._id || '', 4),
+    enabled: !!fabricCategory?._id,
+  });
+
+  // Fetch products for Dupattas
+  const { data: dupattaProductsData = { data: [] }, isLoading: dupattaLoading } = useQuery({
+    queryKey: ['dupattaProducts', dupattaCategory?._id],
+    queryFn: () => fetchProductsByCategory(dupattaCategory?._id || '', 4),
+    enabled: !!dupattaCategory?._id,
   });
 
   // Fetch new arrivals
   const { data: newArrivalsData = [] as Product[], isLoading: newArrivalsLoading } = useQuery({
-  queryKey: ['newArrivals'],
-  queryFn: fetchNewArrivals,
-  suspense: true,
-});
+    queryKey: ['newArrivals'],
+    queryFn: fetchNewArrivals,
+  });
+
+  // Fetch active reels
+  const { data: reelsData = [] as Reel[], isLoading: reelsLoading } = useQuery({
+    queryKey: ['reels'],
+    queryFn: fetchReels,
+  });
 
   // Map API categories to CategoriesGrid format
-  const mappedCategories = categoriesData?.map((cat) => ({
+  const mappedCategories = categoriesData.map((cat: Category) => ({
     id: cat._id,
     name: cat.name,
     description: cat.description,
@@ -179,59 +136,182 @@ const HomePage: React.FC = () => {
   }));
 
   // Map API new arrivals to NewArrivals component format
-  const mappedNewArrivals  = newArrivalsData?.map((product) => ({
-    id: product._id,
+  const mappedNewArrivals = newArrivalsData.map((product: Product) => ({
+    _id: product._id,
     name: product.name,
+    subcategory: product.subcategory,
+    category: product.category,
+    description: product.description,
     price: product.price,
-    image: product.imageUrl || 'https://via.placeholder.com/800', // Fallback image if none provided
-    stockLeft: product.quantity || 0, // Adjust based on your API response
+    imageUrl: product.imageUrl || 'https://via.placeholder.com/800',
+    quantity: product.quantity || 0,
+    options: product.options,
+    createdAt: product.createdAt,
+    updatedAt: product.updatedAt,
+    __v: product.__v,
+    images: product.images,
+    variants: product.variants,
+    specifications: product.specifications,
+    fullDescription: product.fullDescription,
+    material: product.material,
+    style: product.style,
+    length: product.length,
+    blousePiece: product.blousePiece,
+    designNo: product.designNo,
+  }));
+
+  // Map fabric products to ProductsByCategory format
+  const mappedFabricProducts = fabricProductsData.data.map((product: Product) => ({
+    _id: product._id,
+    name: product.name,
+    subcategory: product.subcategory,
+    category: product.category,
+    description: product.description,
+    price: product.price,
+    imageUrl: product.imageUrl || 'https://via.placeholder.com/800',
+    quantity: product.quantity || 0,
+    options: product.options,
+    createdAt: product.createdAt,
+    updatedAt: product.updatedAt,
+    __v: product.__v,
+    images: product.images,
+    variants: product.variants,
+    specifications: product.specifications,
+    fullDescription: product.fullDescription,
+    material: product.material,
+    style: product.style,
+    length: product.length,
+    blousePiece: product.blousePiece,
+    designNo: product.designNo,
+  }));
+
+  // Map dupatta products to ProductsByCategory format
+  const mappedDupattaProducts = dupattaProductsData.data.map((product: Product) => ({
+    _id: product._id,
+    name: product.name,
+    subcategory: product.subcategory,
+    category: product.category,
+    description: product.description,
+    price: product.price,
+    imageUrl: product.imageUrl || 'https://via.placeholder.com/800',
+    quantity: product.quantity || 0,
+    options: product.options,
+    createdAt: product.createdAt,
+    updatedAt: product.updatedAt,
+    __v: product.__v,
+    images: product.images,
+    variants: product.variants,
+    specifications: product.specifications,
+    fullDescription: product.fullDescription,
+    material: product.material,
+    style: product.style,
+    length: product.length,
+    blousePiece: product.blousePiece,
+    designNo: product.designNo,
   }));
 
   const handleViewAll = (category: string) => {
-    console.log(`View all ${category} products`);
+    //console.log(`View all ${category} products`);
     navigate(`/category/${category}`);
+  };
+
+  const handleWorkshopRegister = () => {
+    navigate('/workshops');
   };
 
   return (
     <div className="min-h-screen bg-white px-4 sm:px-6 md:px-8 lg:px-12">
       {/* Carousel Section */}
-      <Carousel items={carouselData} />
+      {bannersLoading ? (
+        <div className="relative w-full h-[50vh] sm:h-[60vh] md:h-[80vh] lg:h-[90vh] overflow-hidden">
+          <HeroSkeleton className="w-full h-full" />
+        </div>
+      ) : (
+        <Carousel banners={bannersData} />
+      )}
 
       {/* Instagram Reels Section */}
-      <InstagramReels reels={reelsData} title="Featured Reels" />
+      {reelsLoading ? (
+        <div className="py-16 bg-white">
+          <div className="container mx-auto px-4">
+            <div className="flex items-center justify-between mb-8">
+              <h2 className="text-3xl font-bold text-gray-900">Featured Reels</h2>
+            </div>
+            <ReelsGridSkeleton />
+          </div>
+        </div>
+      ) : (
+        <InstagramReels reels={reelsData as Reel[]} title="Featured Reels" />
+      )}
 
       {/* New Arrivals Section */}
       {newArrivalsLoading ? (
-        <div>Loading new arrivals...</div>
+        <div className="py-16 bg-gray-50">
+          <div className="container mx-auto px-4">
+            <div className="text-center mb-8">
+              <h2 className="text-3xl font-bold text-gray-900">New Arrivals</h2>
+            </div>
+            <ProductGridSkeleton count={4} />
+          </div>
+        </div>
       ) : (
         <NewArrivals products={mappedNewArrivals} />
       )}
 
       {/* Categories Section */}
       {categoriesLoading ? (
-        <div>Loading categories...</div>
+        <div className="py-16 bg-white">
+          <div className="container mx-auto px-4">
+            <div className="text-center mb-8">
+              <h2 className="text-3xl font-bold text-gray-900">Shop by Category</h2>
+            </div>
+            <CategoriesGridSkeleton />
+          </div>
+        </div>
       ) : (
         <CategoriesGrid categories={mappedCategories} />
       )}
 
       {/* Fabric Collections Section */}
-      <ProductsByCategory
-        title="Fabric Collections"
-        products={fabricCollectionsData}
-        filters={['Hand block print', 'Dabu kantha', 'Mul Mul Fabric']}
-        onViewAll={() => handleViewAll('fabrics')}
-      />
+      {fabricLoading ? (
+        <div className="py-16 bg-gray-50">
+          <div className="container mx-auto px-4">
+            <div className="text-center mb-8">
+              <h2 className="text-3xl font-bold text-gray-900">Fabric Collections</h2>
+            </div>
+            <ProductGridSkeleton count={4} />
+          </div>
+        </div>
+      ) : fabricCategory && mappedFabricProducts.length > 0 ? (
+        <ProductsByCategory
+          title={fabricCategory.name}
+          products={mappedFabricProducts}
+          filters={['Hand block print', 'Dabu kantha', 'Mul Mul Fabric']}
+          onViewAll={() => handleViewAll(fabricCategory._id)}
+        />
+      ) : null}
 
       {/* Dupattas Section */}
-      <ProductsByCategory
-        title="Dupattas"
-        products={dupattasData}
-        filters={['Ajrakh', 'Dabu kantha', 'Mul Mul Fabric']}
-        onViewAll={() => handleViewAll('dupattas')}
-      />
+      {dupattaLoading ? (
+        <div className="py-16 bg-gray-50">
+          <div className="container mx-auto px-4">
+            <div className="text-center mb-8">
+              <h2 className="text-3xl font-bold text-gray-900">Dupattas</h2>
+            </div>
+            <ProductGridSkeleton count={4} />
+          </div>
+        </div>
+      ) : dupattaCategory && mappedDupattaProducts.length > 0 ? (
+        <ProductsByCategory
+          title={dupattaCategory.name}
+          products={mappedDupattaProducts}
+          filters={['Ajrakh', 'Dabu kantha', 'Mul Mul Fabric']}
+          onViewAll={() => handleViewAll(dupattaCategory._id)}
+        />
+      ) : null}
 
-      {/* Work Registration Section */}
-      <WorkRegistration />
+      {/* Workshop Section */}
+      <WorkshopSection onRegisterClick={handleWorkshopRegister} />
 
       {/* Support Artisans Section */}
       <SupportArtisans />

@@ -8,6 +8,7 @@ import EnquiryForm from '../../src/components/EnquiryForm/EnquiryForm';
 const fetchProductDetails = async (productId: string | undefined): Promise<ApiResponse<Product>> => {
   if (!productId) throw new Error('Product ID is required');
   const res = await apiClient.get(`/products/${productId}`);
+  console.log(res.data);
   return res.data;
 };
 
@@ -49,6 +50,7 @@ const ProductDetailsPage: React.FC = () => {
       if (selectedVariant >= 0 && product.variants && product.variants[selectedVariant]) {
         // Show variant images when a variant is selected
         const variant = product.variants[selectedVariant];
+        console.log('variant', variant);
         if (variant && variant.images && variant.images.length > 0) {
           setCurrentImages(variant.images);
         } else {
