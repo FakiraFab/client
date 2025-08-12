@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import ProductCard from '../components/ProductCard';
 import { useQuery } from '@tanstack/react-query';
 import apiClient from '../api/client';
-import type { Product, ApiResponse } from '../types';
+import type { ApiResponse, Product } from '../types';
 import FilterTabs from '../components/FilterTabs/FilterTabs';
 
 // Extended ApiResponse type to include categoryImage
@@ -23,7 +23,9 @@ const fetchProductsByCategory = async (categoryId: string | undefined, type: str
 const CategoryPage: React.FC = () => {
   const { categoryId } = useParams<{ categoryId: string }>();
   const [selectedType, setSelectedType] = useState<string>('All');
+  const [sortBy, setSortBy] = useState<string>('Featured');
   const [imageError, setImageError] = useState<boolean>(false);
+  const [isFiltering, setIsFiltering] = useState<boolean>(false);
 
   const { data = { success: true, data: [], filters: { subCategories: [] }, pagination: { total: 0, page: 1, pages: 1 } }, isLoading, error } = useQuery({
     queryKey: ['products', categoryId, selectedType],
@@ -31,8 +33,38 @@ const CategoryPage: React.FC = () => {
     enabled: !!categoryId,
   });
 
-  const displayCategoryName = data?.categoryName || categoryId?.replace(/-/g, ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+  // Handle filter changes with loading state
+  const handleFilterChange = (newType: string) => {
+    setIsFiltering(true);
+    setSelectedType(newType);
+    // Reset filtering state after a short delay to show loading
+    setTimeout(() => setIsFiltering(false), 500);
+  };
 
+  // Sort products based on selected sort option
+  const sortedProducts = React.useMemo(() => {
+    if (!data.data) return [];
+    
+    const products = [...data.data];
+    
+    switch (sortBy) {
+      case 'Price: Low to High':
+        return products.sort((a, b) => a.price - b.price);
+      case 'Price: High to Low':
+        return products.sort((a, b) => b.price - a.price);
+      case 'Newest':
+        return products.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+      case 'Best Selling':
+        // For now, we'll sort by quantity (assuming higher quantity means more popular)
+        return products.sort((a, b) => b.quantity - a.quantity);
+      case 'Featured':
+      default:
+        return products; // Keep original order
+    }
+  }, [data.data, sortBy]);
+
+  const displayCategoryName = data.data[0]?.category?.name || categoryId?.replace(/-/g, ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+  
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
       {/* Hero Header Section */}
@@ -79,15 +111,21 @@ const CategoryPage: React.FC = () => {
           <FilterTabs 
             categoryId={categoryId} 
             selectedType={selectedType} 
-            onSelect={setSelectedType} 
+            onSelect={handleFilterChange} 
             subCategories={data.filters?.subCategories || []} 
           />
         </div>
       </div>
 
       {/* Loading State */}
-      {isLoading && (
+      {(isLoading || isFiltering) && (
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center gap-2 text-gray-600">
+              <div className="w-4 h-4 border-2 border-purple-600 border-t-transparent rounded-full animate-spin"></div>
+              <span>{isFiltering ? 'Applying filters...' : 'Loading products...'}</span>
+            </div>
+          </div>
           <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
             {[...Array(8)].map((_, i) => (
               <div key={i} className="animate-pulse">
@@ -105,25 +143,32 @@ const CategoryPage: React.FC = () => {
       {/* Main Content */}
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         {/* Results Summary */}
-        {!isLoading && data?.data && data.data.length > 0 && (
+        {!isLoading && !isFiltering && sortedProducts && sortedProducts.length > 0 && (
           <div className="mb-8">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
               <p className="text-gray-600 text-sm sm:text-base mb-4 sm:mb-0">
-                Showing <span className="font-semibold text-gray-900">{data.data.length}</span> products
+                Showing <span className="font-semibold text-gray-900">{sortedProducts.length}</span> products
                 {selectedType !== 'All' && (
                   <span className="ml-1">in <span className="font-semibold text-gray-900">{selectedType}</span></span>
+                )}
+                {sortBy !== 'Featured' && (
+                  <span className="ml-1">sorted by <span className="font-semibold text-gray-900">{sortBy}</span></span>
                 )}
               </p>
               
               {/* Sort Options */}
               <div className="flex items-center space-x-4">
                 <label className="text-sm text-gray-600">Sort by:</label>
-                <select className="text-sm border border-gray-200 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200">
-                  <option>Featured</option>
-                  <option>Price: Low to High</option>
-                  <option>Price: High to Low</option>
-                  <option>Newest</option>
-                  <option>Best Selling</option>
+                <select 
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                  className="text-sm border border-gray-200 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+                >
+                  <option value="Featured">Featured</option>
+                  <option value="Price: Low to High">Price: Low to High</option>
+                  <option value="Price: High to Low">Price: High to Low</option>
+                  <option value="Newest">Newest</option>
+                  <option value="Best Selling">Best Selling</option>
                 </select>
               </div>
             </div>
@@ -154,7 +199,7 @@ const CategoryPage: React.FC = () => {
         )}
 
         {/* Empty State */}
-        {!isLoading && !error && data?.data?.length === 0 && (
+        {!isLoading && !isFiltering && !error && sortedProducts?.length === 0 && (
           <div className="text-center py-16 sm:py-20">
             <div className="max-w-md mx-auto">
               <div className="w-20 h-20 mx-auto mb-6 bg-gray-100 rounded-full flex items-center justify-center">
@@ -166,22 +211,35 @@ const CategoryPage: React.FC = () => {
                 No products found
               </h3>
               <p className="text-gray-600 mb-6">
-                We couldn't find any products in this category. Try browsing other categories or check back later.
+                {selectedType !== 'All' 
+                  ? `We couldn't find any products in the "${selectedType}" category. Try selecting a different filter or browse all products.`
+                  : 'We couldn\'t find any products in this category. Try browsing other categories or check back later.'
+                }
               </p>
-              <button 
-                onClick={() => setSelectedType('All')}
-                className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-medium rounded-xl hover:from-purple-700 hover:to-pink-700 transition-all duration-200 transform hover:scale-105"
-              >
-                View All Products
-              </button>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                <button 
+                  onClick={() => handleFilterChange('All')}
+                  className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-medium rounded-xl hover:from-purple-700 hover:to-pink-700 transition-all duration-200 transform hover:scale-105"
+                >
+                  View All Products
+                </button>
+                {selectedType !== 'All' && (
+                  <button 
+                    onClick={() => handleFilterChange('All')}
+                    className="inline-flex items-center px-6 py-3 bg-white border-2 border-gray-200 text-gray-700 font-medium rounded-xl hover:border-purple-300 hover:text-purple-600 transition-all duration-200"
+                  >
+                    Clear Filters
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         )}
 
         {/* Product Grid - Enhanced for Mobile (2 columns) and Desktop */}
-        {!isLoading && !error && data?.data && data.data.length > 0 && (
+        {!isLoading && !isFiltering && !error && sortedProducts && sortedProducts.length > 0 && (
           <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
-            {data.data.map((product: Product, index: number) => (
+            {sortedProducts.map((product: Product, index: number) => (
               <div 
                 key={product._id} 
                 className="group transform transition-all duration-300 hover:scale-105 hover:z-10"
@@ -197,7 +255,7 @@ const CategoryPage: React.FC = () => {
         )}
 
         {/* Load More Section */}
-        {!isLoading && !error && data?.data && data.data.length > 0 && (
+        {!isLoading && !isFiltering && !error && sortedProducts && sortedProducts.length > 0 && (
           <div className="mt-12 sm:mt-16 text-center">
             <button className="inline-flex items-center px-8 py-4 bg-white border-2 border-gray-200 text-gray-700 font-medium rounded-xl hover:border-purple-300 hover:text-purple-600 transition-all duration-200 shadow-sm hover:shadow-md">
               <span>Load More Products</span>
@@ -225,7 +283,7 @@ const CategoryPage: React.FC = () => {
                 placeholder="Enter your email"
                 className="flex-1 px-4 py-3 rounded-xl border-0 focus:outline-none focus:ring-2 focus:ring-purple-400"
               />
-              <button className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-medium rounded-xl hover:from-purple-700 hover:to-pink-700 transition-all duration-200">
+              <button className="px-6 py-3 bg-[#7F1416] from-red-900 to-red-800 text-white font-medium rounded-xl hover:from-purple-700 hover:to-pink-700 transition-all duration-200">
                 Subscribe
               </button>
             </div>
@@ -233,7 +291,7 @@ const CategoryPage: React.FC = () => {
         </div>
       </div>
 
-      <style jsx>{`
+      <style>{`
         @keyframes fadeInUp {
           from {
             opacity: 0;

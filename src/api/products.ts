@@ -15,3 +15,23 @@ export const fetchNewArrivals = async () => {
   });
   return res.data.data;
 };
+
+// Reels API functions
+export const fetchReels = async (params?: {
+  page?: number;
+  limit?: number;
+  isActive?: boolean;
+}) => {
+  const response = await apiClient.get('/reels', { params });
+  return response.data;
+};
+
+export const fetchActiveReels = async () => {
+  const response = await apiClient.get('/reels/active');
+  return response.data;
+};
+
+export const fetchReel = async (id: string) => {
+  const response = await apiClient.get(`/reels/${id}`);
+  return response.data;
+};

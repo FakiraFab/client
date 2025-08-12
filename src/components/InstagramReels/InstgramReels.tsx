@@ -1,13 +1,6 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect} from 'react';
 import { ChevronLeft, ChevronRight, Play, Pause, X, Volume2, VolumeX } from 'lucide-react';
-
-interface Reel {
-  id: string;
-  title: string;
-  price: string;
-  image: string;
-  isVideo?: boolean;
-}
+import type { Reel } from '../../types';
 
 interface InstagramReelsProps {
   reels: Reel[];
@@ -114,48 +107,48 @@ const InstagramReels: React.FC<InstagramReelsProps> = ({ reels, title = "Feature
         >
           {reels.map((reel, index) => (
             <div
-              key={reel.id}
+              key={reel._id}
               onClick={() => openModal(index)}
               className="cursor-pointer flex-shrink-0 w-72 bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1 overflow-hidden group"
             >
               <div className="relative h-80 overflow-hidden">
-                {reel.isVideo ? (
-                  <video
-                    ref={(el) => el && videoRefs.current.set(reel.id, el)}
-                    src={reel.image}
-                    className="w-full h-full object-cover"
-                    muted
-                    loop
-                  />
-                ) : (
-                  <img
-                    src={reel.image}
-                    alt={reel.title}
-                    className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500"
-                  />
-                )}
+                <video
+                  ref={(el) => {
+                    if (el) {
+                      videoRefs.current.set(reel._id, el);
+                    }
+                  }}
+                  src={reel.videoUrl}
+                  poster={reel.thumbnailUrl}
+                  className="w-full h-full object-cover"
+                  muted
+                  loop
+                />
 
-                {reel.isVideo && (
-                  <div className="absolute inset-0  bg-opacity-20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        toggleVideo(reel.id);
-                      }}
-                      className="p-4 bg-white bg-opacity-90 rounded-full"
-                    >
-                      {playingId === reel.id ? (
-                        <Pause className="h-6 w-6 text-gray-800" />
-                      ) : (
-                        <Play className="h-6 w-6 text-gray-800" />
-                      )}
-                    </button>
-                  </div>
-                )}
+                <div className="absolute inset-0 bg-opacity-20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleVideo(reel._id);
+                    }}
+                    className="p-4 bg-white bg-opacity-90 rounded-full"
+                  >
+                    {playingId === reel._id ? (
+                      <Pause className="h-6 w-6 text-gray-800" />
+                    ) : (
+                      <Play className="h-6 w-6 text-gray-800" />
+                    )}
+                  </button>
+                </div>
 
                 <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4">
                   <h3 className="text-white font-semibold text-lg mb-1">{reel.title}</h3>
-                  <p className="text-white/90 text-sm">{reel.price}</p>
+                  {reel.price && (
+                    <p className="text-white/90 text-sm">₹{reel.price}</p>
+                  )}
+                  {reel.description && (
+                    <p className="text-white/80 text-xs mt-1">{reel.description}</p>
+                  )}
                 </div>
               </div>
             </div>
@@ -195,9 +188,10 @@ const InstagramReels: React.FC<InstagramReelsProps> = ({ reels, title = "Feature
 
           {/* Video Player */}
           <video
-            key={reels[activeIndex].id}
+            key={reels[activeIndex]._id}
             ref={modalVideoRef}
-            src={reels[activeIndex].image}
+            src={reels[activeIndex].videoUrl}
+            poster={reels[activeIndex].thumbnailUrl}
             autoPlay
             muted={isMuted}
             controls
