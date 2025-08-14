@@ -19,8 +19,8 @@ const InstagramReels: React.FC<InstagramReelsProps> = ({ reels, title = "Feature
   const touchStartX = useRef<number>(0);
 
   // Scroll buttons
-  const scrollLeft = () => scrollContainerRef.current?.scrollBy({ left: -320, behavior: 'smooth' });
-  const scrollRight = () => scrollContainerRef.current?.scrollBy({ left: 320, behavior: 'smooth' });
+  const scrollLeft = () => scrollContainerRef.current?.scrollBy({ left: -240, behavior: 'smooth' });
+  const scrollRight = () => scrollContainerRef.current?.scrollBy({ left: 240, behavior: 'smooth' });
 
   // Toggle thumbnail video (for preview only)
   const toggleVideo = (reelId: string) => {
@@ -109,9 +109,9 @@ const InstagramReels: React.FC<InstagramReelsProps> = ({ reels, title = "Feature
             <div
               key={reel._id}
               onClick={() => openModal(index)}
-              className="cursor-pointer flex-shrink-0 w-72 bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1 overflow-hidden group"
+              className="cursor-pointer flex-shrink-0 w-56 bg-white 3xl shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1 overflow-hidden group"
             >
-              <div className="relative h-80 overflow-hidden">
+              <div className="relative h-96 overflow-hidden">
                 <video
                   ref={(el) => {
                     if (el) {
@@ -125,29 +125,29 @@ const InstagramReels: React.FC<InstagramReelsProps> = ({ reels, title = "Feature
                   loop
                 />
 
-                <div className="absolute inset-0 bg-opacity-20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="absolute inset-0 bg-black bg-opacity-20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
                       toggleVideo(reel._id);
                     }}
-                    className="p-4 bg-white bg-opacity-90 rounded-full"
+                    className="p-3 bg-white bg-opacity-90 rounded-full backdrop-blur-sm"
                   >
                     {playingId === reel._id ? (
-                      <Pause className="h-6 w-6 text-gray-800" />
+                      <Pause className="h-5 w-5 text-gray-800" />
                     ) : (
-                      <Play className="h-6 w-6 text-gray-800" />
+                      <Play className="h-5 w-5 text-gray-800 ml-0.5" />
                     )}
                   </button>
                 </div>
 
-                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4">
-                  <h3 className="text-white font-semibold text-lg mb-1">{reel.title}</h3>
+                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-4">
+                  <h3 className="text-white font-semibold text-base mb-1 line-clamp-2">{reel.title}</h3>
                   {reel.price && (
-                    <p className="text-white/90 text-sm">₹{reel.price}</p>
+                    <p className="text-white/90 text-sm font-medium">₹{reel.price}</p>
                   )}
                   {reel.description && (
-                    <p className="text-white/80 text-xs mt-1">{reel.description}</p>
+                    <p className="text-white/80 text-xs mt-1 line-clamp-2">{reel.description}</p>
                   )}
                 </div>
               </div>

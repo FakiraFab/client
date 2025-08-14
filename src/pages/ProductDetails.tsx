@@ -4,6 +4,8 @@ import { useQuery } from '@tanstack/react-query';
 import apiClient from '../api/client';
 import type { Product, ApiResponse, Enquiry } from '../types';
 import EnquiryForm from '../../src/components/EnquiryForm/EnquiryForm';
+import { useCart } from '../context/CartContext';
+import { useToast } from '../context/ToastContext';
 
 const fetchProductDetails = async (productId: string | undefined): Promise<ApiResponse<Product>> => {
   if (!productId) throw new Error('Product ID is required');
@@ -27,6 +29,8 @@ const ProductDetailsPage: React.FC = () => {
   const [isEnquiryFormOpen, setIsEnquiryFormOpen] = useState(false);
   const [enquiryStatus, setEnquiryStatus] = useState<{ success: boolean; message: string } | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { addToCart } = useCart();
+  const { showToast } = useToast();
 
   const { data: productData, isLoading, error } = useQuery({
     queryKey: ['product', productId],
@@ -131,6 +135,20 @@ const ProductDetailsPage: React.FC = () => {
   const closeEnquiryForm = () => {
     setIsEnquiryFormOpen(false);
     setEnquiryStatus(null); // Reset status when closing form
+  };
+
+  const handleAddToCart = () => {
+    if (!product) return;
+    
+    addToCart(product, quantity, selectedVariant >= 0 ? selectedVariant : undefined, getCurrentColor());
+    
+    // Show success toast
+    showToast({
+      type: 'success',
+      title: 'Added to Cart!',
+      message: `${product.name} has been added to your cart.`,
+      duration: 3000
+    });
   };
 
   const handleEnquirySubmit = async (enquiry: Enquiry) => {
@@ -401,13 +419,22 @@ const ProductDetailsPage: React.FC = () => {
               </p>
             </div>
 
-            <button 
-              onClick={openEnquiryForm}
-              className="w-full bg-red-600 text-white py-3 rounded-lg font-semibold hover:bg-red-700 transition-colors"
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? 'Submitting...' : 'Enquire Now'}
-            </button>
+            <div className="space-y-3">
+              <button 
+                onClick={handleAddToCart}
+                className="w-full bg-gray-800 text-white py-3 rounded-lg font-semibold hover:bg-gray-900 transition-colors"
+              >
+                Add to Cart
+              </button>
+              
+              <button 
+                onClick={openEnquiryForm}
+                className="w-full bg-red-600 text-white py-3 rounded-lg font-semibold hover:bg-red-700 transition-colors"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? 'Submitting...' : 'Enquire Now'}
+              </button>
+            </div>
           </div>
         </div>
 

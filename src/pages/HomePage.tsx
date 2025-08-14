@@ -4,7 +4,7 @@ import NewArrivals from '../components/NewArrivals/NewArrivals';
 import CategoriesGrid from '../components/Categories/CategoriesGrid';
 import ProductsByCategory from '../components/ProductByCategory/ProductByCategory';
 
-import SupportArtisans from '../components/SupportArtisans/SupportArtisans';
+// import SupportArtisans from '../components/SupportArtisans/SupportArtisans';
 import Carousel from '../components/Carousel/Carousel';
 import { useNavigate } from 'react-router-dom';
 import apiClient from '../api/client';
@@ -13,6 +13,7 @@ import type { Category, Product, Reel, Banner, ApiResponse } from '../types';
 import { fetchActiveReels } from '../api/products';
 import { fetchActiveBanners } from '../api/banners';
 import WorkshopSection from '../components/WorkshopSection/WorkshopSection';
+import { FloralPatternSection, BestSellerSection, TouchFeelCreateHero } from '../components/StaticSections';
 import { 
   HeroSkeleton, 
   ReelsGridSkeleton, 
@@ -220,7 +221,7 @@ const HomePage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white px-4 sm:px-6 md:px-8 lg:px-12">
+    <div className="min-h-screen mt-5 bg-white px-4 sm:px-6 md:px-8 lg:px-12">
       {/* Carousel Section */}
       {bannersLoading ? (
         <div className="relative w-full h-[50vh] sm:h-[60vh] md:h-[80vh] lg:h-[90vh] overflow-hidden">
@@ -258,6 +259,8 @@ const HomePage: React.FC = () => {
         <NewArrivals products={mappedNewArrivals} />
       )}
 
+      
+
       {/* Categories Section */}
       {categoriesLoading ? (
         <div className="py-16 bg-white">
@@ -271,6 +274,9 @@ const HomePage: React.FC = () => {
       ) : (
         <CategoriesGrid categories={mappedCategories} />
       )}
+
+    <TouchFeelCreateHero/>
+
 
       {/* Fabric Collections Section */}
       {fabricLoading ? (
@@ -291,6 +297,8 @@ const HomePage: React.FC = () => {
         />
       ) : null}
 
+      
+
       {/* Dupattas Section */}
       {dupattaLoading ? (
         <div className="py-16 bg-gray-50">
@@ -310,11 +318,19 @@ const HomePage: React.FC = () => {
         />
       ) : null}
 
+      
+      {/* Static Floral Pattern Section */}
+      <FloralPatternSection />
+
+      {/* Static Best Seller Section */}
+      <BestSellerSection />
+
+
       {/* Workshop Section */}
       <WorkshopSection onRegisterClick={handleWorkshopRegister} />
 
       {/* Support Artisans Section */}
-      <SupportArtisans />
+      {/* <SupportArtisans /> */}
     </div>
   );
 };

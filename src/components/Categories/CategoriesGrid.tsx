@@ -28,14 +28,14 @@ const CategoriesGrid: React.FC<CategoriesGridProps> = ({ categories, title = "Ca
   // Scroll left
   const scrollLeft = () => {
     if (scrollRef.current) {
-      scrollRef.current.scrollBy({ left: -300, behavior: 'smooth' });
+      scrollRef.current.scrollBy({ left: -400, behavior: 'smooth' });
     }
   };
 
   // Scroll right
   const scrollRight = () => {
     if (scrollRef.current) {
-      scrollRef.current.scrollBy({ left: 300, behavior: 'smooth' });
+      scrollRef.current.scrollBy({ left: 400, behavior: 'smooth' });
     }
   };
 
@@ -73,7 +73,7 @@ const CategoriesGrid: React.FC<CategoriesGridProps> = ({ categories, title = "Ca
             <div
               key={category.id}
               onClick={() => handleCategoryClick(category.id)}
-              className="relative flex-shrink-0 w-80 h-80 rounded-2xl overflow-hidden cursor-pointer group shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 snap-center"
+              className="relative flex-shrink-0 w-80 h-[500px] overflow-hidden cursor-pointer group shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 snap-center"
             >
               <img
                 src={category.image}
@@ -85,19 +85,22 @@ const CategoriesGrid: React.FC<CategoriesGridProps> = ({ categories, title = "Ca
               <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
               
               {/* Content */}
-              <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
-                <h3 className="text-2xl font-bold mb-2">{category.name}</h3>
-                <p className="text-white/90 mb-4">{category.description}</p>
-                {category.discount && (
-                  <span className="inline-block bg-red-600 text-white px-3 py-1 rounded-full text-sm font-semibold mb-3">
-                    {category.discount}
-                  </span>
-                )}
+              <div className="absolute bottom-0 left-0 right-0 p-6">
                 <button
-                  onClick={() => handleCategoryClick(category.id)}
-                  className="w-full bg-red-900 hover:bg-red-800 text-white py-3 rounded-lg font-semibold transition-colors duration-200 cursor-pointer"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleCategoryClick(category.id);
+                  }}
+                  className="w-full text-white py-3 font-semibold transition-colors duration-200 cursor-pointer text-lg uppercase tracking-wide"
+                  style={{ backgroundColor: 'black' }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = '#7F1416';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = 'black';
+                  }}
                 >
-                  Explore
+                  {category.name}
                 </button>
               </div>
             </div>
