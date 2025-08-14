@@ -2,6 +2,8 @@ import React from 'react';
 import { X, ShoppingCart, Heart, Star, Truck } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import type { Product } from '../../types';
+import { useCart } from '../../context/CartContext';
+import { useToast } from '../../context/ToastContext';
 
 interface QuickViewProps {
   product: Product | null;
@@ -11,6 +13,8 @@ interface QuickViewProps {
 
 const QuickView: React.FC<QuickViewProps> = ({ product, isOpen, onClose }) => {
   const navigate = useNavigate();
+  const { addToCart } = useCart();
+  const { showToast } = useToast();
 
   if (!product || !isOpen) return null;
 
@@ -43,8 +47,19 @@ const QuickView: React.FC<QuickViewProps> = ({ product, isOpen, onClose }) => {
   };
 
   const handleAddToCart = () => {
-    // TODO: Implement add to cart functionality
-    console.log('Add to cart:', productId);
+    if (stockQuantity === 0) return;
+    
+    // Add to cart with default quantity 1
+    addToCart(product, 1);
+    
+    // Show success toast and close modal
+    showToast({
+      type: 'success',
+      title: 'Added to Cart!',
+      message: `${product.name} has been added to your cart.`,
+      duration: 3000
+    });
+    onClose();
   };
 
   return (

@@ -3,6 +3,9 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Header from './components/Header/Header';
 import Footer from './components/Footer/Footer';
 import ScrollToTop from './components/ScrollTop/ScrollTop';
+import { CartProvider } from './context/CartContext';
+import { ToastProvider, useToast } from './context/ToastContext';
+import ToastContainer from './components/Toast/ToastContainer';
 
 const HomePage = lazy(() => import('./pages/HomePage'));
 const CategoryPage = lazy(() => import('./pages/CategoryPage'));
@@ -12,13 +15,15 @@ const AboutUs = lazy(() => import('./pages/AboutUs'));
 const ProductDetailsPage = lazy(() => import('./pages/ProductDetails'));
 const AllProducts = lazy(() => import('./pages/AllProducts'));
 
-function App() {
+function AppContent() {
+  const { toasts, removeToast } = useToast();
+  
   return (
-    <Router>
+    <>
       <ScrollToTop />
       <div className="min-h-screen flex flex-col bg-white">
         <Header />
-        <main className = "flex-grow">
+        <main className="flex-grow">
           <Suspense fallback={<div className="text-center py-20">Loading...</div>}>
             <Routes>
               <Route path="/" element={<HomePage />} />
@@ -33,7 +38,20 @@ function App() {
         </main>
         <Footer/>
       </div>
-    </Router>
+      <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
+    </>
+  );
+}
+
+function App() {
+  return (
+    <ToastProvider>
+      <CartProvider>
+        <Router>
+          <AppContent />
+        </Router>
+      </CartProvider>
+    </ToastProvider>
   );
 }
 

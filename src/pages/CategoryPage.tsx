@@ -122,7 +122,7 @@ const CategoryPage: React.FC = () => {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="text-center mb-8">
             <div className="inline-flex items-center gap-2 text-gray-600">
-              <div className="w-4 h-4 border-2 border-purple-600 border-t-transparent rounded-full animate-spin"></div>
+              <div className="w-4 h-4 border-2 border-[#7F1416] border-t-transparent rounded-full animate-spin"></div>
               <span>{isFiltering ? 'Applying filters...' : 'Loading products...'}</span>
             </div>
           </div>
@@ -219,14 +219,14 @@ const CategoryPage: React.FC = () => {
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
                 <button 
                   onClick={() => handleFilterChange('All')}
-                  className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-medium rounded-xl hover:from-purple-700 hover:to-pink-700 transition-all duration-200 transform hover:scale-105"
+                  className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-[#7F1416] to-[#7F1416] text-white font-medium rounded-xl hover:from-[#7F1416] hover:to-[#7F1416] transition-all duration-200 transform hover:scale-105"
                 >
                   View All Products
                 </button>
                 {selectedType !== 'All' && (
                   <button 
                     onClick={() => handleFilterChange('All')}
-                    className="inline-flex items-center px-6 py-3 bg-white border-2 border-gray-200 text-gray-700 font-medium rounded-xl hover:border-purple-300 hover:text-purple-600 transition-all duration-200"
+                    className="inline-flex items-center px-6 py-3 bg-white border-2 border-gray-200 text-gray-700 font-medium rounded-xl hover:border-[#7F1416] hover:text-[#7F1416] transition-all duration-200"
                   >
                     Clear Filters
                   </button>
@@ -257,7 +257,7 @@ const CategoryPage: React.FC = () => {
         {/* Load More Section */}
         {!isLoading && !isFiltering && !error && sortedProducts && sortedProducts.length > 0 && (
           <div className="mt-12 sm:mt-16 text-center">
-            <button className="inline-flex items-center px-8 py-4 bg-white border-2 border-gray-200 text-gray-700 font-medium rounded-xl hover:border-purple-300 hover:text-purple-600 transition-all duration-200 shadow-sm hover:shadow-md">
+            <button className="inline-flex items-center px-8 py-4 bg-white border-2 border-gray-200 text-gray-700 font-medium rounded-xl  hover:text-[#7F1416] transition-all duration-200 shadow-sm hover:shadow-md">
               <span>Load More Products</span>
               <svg className="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
@@ -267,29 +267,7 @@ const CategoryPage: React.FC = () => {
         )}
       </div>
 
-      {/* Newsletter Section */}
-      <div className="bg-gradient-to-r from-slate-900 to-slate-800 mt-16">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
-          <div className="text-center max-w-2xl mx-auto">
-            <h3 className="text-2xl sm:text-3xl font-bold text-white mb-4">
-              Stay In Style
-            </h3>
-            <p className="text-gray-300 mb-8">
-              Get the latest trends, exclusive offers, and style inspiration delivered to your inbox.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
-              <input 
-                type="email" 
-                placeholder="Enter your email"
-                className="flex-1 px-4 py-3 rounded-xl border-0 focus:outline-none focus:ring-2 focus:ring-purple-400"
-              />
-              <button className="px-6 py-3 bg-[#7F1416] from-red-900 to-red-800 text-white font-medium rounded-xl hover:from-purple-700 hover:to-pink-700 transition-all duration-200">
-                Subscribe
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
+     
 
       <style>{`
         @keyframes fadeInUp {

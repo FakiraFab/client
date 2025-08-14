@@ -66,7 +66,7 @@ const AllProducts: React.FC = () => {
               Discover our complete collection of premium fabrics, sarees, dress materials, and more
             </p>
             <div className="mt-8 flex justify-center">
-              <div className="w-24 h-1 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full"></div>
+              <div className="w-40 h-1 bg-white rounded-full"></div>
             </div>
           </div>
         </div>
