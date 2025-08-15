@@ -168,7 +168,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
           </div>
 
           {/* Add to Cart Icon - Bottom Right */}
-          <div className="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+          <div className="absolute bottom-3 right-3 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-200">
             <button
               onClick={handleAddToCart}
               disabled={isOutOfStock}
