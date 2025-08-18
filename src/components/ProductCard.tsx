@@ -21,7 +21,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   // const [showQuickView, setShowQuickView] = useState(false);
 
-  console.log(product);
+  console.log("Product Card",product);
 
   // const navigate = useNavigate();
   const { addToCart } = useCart();
@@ -205,7 +205,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
             ₹{product.price ? product.price.toLocaleString() : '0'}
           </span>
           <span className="text-xs text-gray-500">
-            per meter
+            per {product.unit || 'meter'}
           </span>
         </div>
 

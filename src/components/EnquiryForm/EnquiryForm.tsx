@@ -10,6 +10,7 @@ interface EnquiryFormProps {
   selectedVariant?: string;
   defaultQuantity?: number;
   productImage?: string;
+  unit?: string;
   onSubmit: (enquiry: Enquiry) => void;
 }
 
@@ -36,6 +37,7 @@ const EnquiryForm: React.FC<EnquiryFormProps> = ({
   selectedVariant = '',
   defaultQuantity = 1,
   productImage,
+  unit = 'meter',
   onSubmit,
 }) => {
   const [formData, setFormData] = useState<EnquiryFormData>({
@@ -115,7 +117,7 @@ const EnquiryForm: React.FC<EnquiryFormProps> = ({
     }
 
     if (formData.quantity < 1) {
-      newErrors.quantity = 'Quantity must be at least 1';
+      newErrors.quantity = `Quantity must be at least 1 ${unit}`;
     }
 
     if (formData.buyOption === 'Wholesale' && !formData.companyName.trim()) {
@@ -299,8 +301,8 @@ const EnquiryForm: React.FC<EnquiryFormProps> = ({
                   <div className="mt-2 flex items-center justify-between">
                     <span className="text-sm font-medium text-gray-700">Quantity:</span>
                     <span className="text-sm font-semibold text-gray-900">
-                      {formData.quantity} Meter{formData.quantity !== 1 ? 's' : ''}
-                    </span>
+                      {formData.quantity} {unit}{formData.quantity !== 1 ? 's' : ''}
+                  </span>
                   </div>
                 </div>
               </div>

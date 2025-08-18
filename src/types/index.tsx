@@ -46,6 +46,7 @@ export interface Product {
   length?: string;
   blousePiece?: string;
   designNo?: string;
+  unit?: "meter" | "piece";
 }
 
 export interface Category {
