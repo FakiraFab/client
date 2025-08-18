@@ -333,7 +333,7 @@ const ProductDetailsPage: React.FC = () => {
               </div>
               <div className="flex items-center justify-between mt-2">
                 <p className="text-sm text-gray-600">
-                  Quantity left: {getCurrentQuantity()} Meters
+                  Quantity left: {getCurrentQuantity()} {product.unit || 'meters'}
                 </p>
                 <p className="text-sm font-medium text-green-600">
                   Save ₹{getSavings().toLocaleString()}
@@ -389,7 +389,7 @@ const ProductDetailsPage: React.FC = () => {
                     -
                   </button>
                   <span className="px-4 py-2 font-medium min-w-[80px] text-center">
-                    {quantity} Meter
+                    {quantity} {product.unit || 'meter'}
                   </span>
                   <button
                     onClick={() => handleQuantityChange(1)}
@@ -400,7 +400,7 @@ const ProductDetailsPage: React.FC = () => {
                 </div>
               </div>
               <div className="flex flex-wrap gap-2">
-                {[1, 2.5, 5, 10].map((qty) => (
+                {product.unit === 'piece' ? [1, 2, 5, 10] : [1, 2.5, 5, 10].map((qty) => (
                   <button
                     key={qty}
                     onClick={() => handleQuickQuantitySelect(qty)}
@@ -410,7 +410,7 @@ const ProductDetailsPage: React.FC = () => {
                         : 'border-gray-300 hover:bg-gray-50'
                     }`}
                   >
-                    {qty} Meter{qty > 1 ? 's' : ''}
+                    {qty} {product.unit || 'meter'}{qty > 1 ? 's' : ''}
                   </button>
                 ))}
               </div>
@@ -518,6 +518,7 @@ const ProductDetailsPage: React.FC = () => {
         selectedVariant={getCurrentColor()}
         defaultQuantity={quantity}
         productImage={currentImages[selectedImage] || product.imageUrl}
+        unit={product.unit || 'meter'}
         onSubmit={handleEnquirySubmit}
       />
     </div>
