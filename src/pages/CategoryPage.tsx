@@ -64,7 +64,7 @@ const CategoryPage: React.FC = () => {
   }, [data.data, sortBy]);
 
   const displayCategoryName = data.data[0]?.category?.name || categoryId?.replace(/-/g, ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
-  
+  const fallbackImage = "https://www.fabvoguestudio.com/cdn/shop/collections/co-fresh-designs.jpg?v=1742118562&width=1950";
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
       {/* Hero Header Section */}
@@ -79,11 +79,11 @@ const CategoryPage: React.FC = () => {
             onLoad={() => setImageError(false)}
           />
         ) : (
-          <div className="absolute inset-0 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900">
-            {/* Decorative elements for fallback */}
-            <div className="absolute top-0 left-1/4 w-96 h-96 bg-gradient-to-br from-purple-400/20 to-pink-400/20 rounded-full blur-3xl transform -translate-y-1/2"></div>
-            <div className="absolute bottom-0 right-1/4 w-80 h-80 bg-gradient-to-br from-blue-400/20 to-cyan-400/20 rounded-full blur-3xl transform translate-y-1/2"></div>
-          </div>
+          <img 
+            src={fallbackImage} 
+            alt="Category Background"
+            className="absolute inset-0 w-full h-full object-cover"
+          />
         )}
         
         {/* Overlay for text readability */}
@@ -99,7 +99,7 @@ const CategoryPage: React.FC = () => {
               Discover our curated collection of premium {displayCategoryName?.toLowerCase()} designed for the modern lifestyle
             </p>
             <div className="mt-8 flex justify-center">
-              <div className="w-24 h-1 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full"></div>
+              <div className="w-40 h-1 bg-white rounded-full"></div>
             </div>
           </div>
         </div>
