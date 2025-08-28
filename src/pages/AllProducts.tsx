@@ -191,29 +191,7 @@ const AllProducts: React.FC = () => {
         )}
       </div>
 
-      {/* Newsletter Section */}
-      <div className="bg-gradient-to-r from-slate-900 to-slate-800 mt-16">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
-          <div className="text-center max-w-2xl mx-auto">
-            <h3 className="text-2xl sm:text-3xl font-bold text-white mb-4">
-              Stay In Style
-            </h3>
-            <p className="text-gray-300 mb-8">
-              Get the latest trends, exclusive offers, and style inspiration delivered to your inbox.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
-              <input 
-                type="email" 
-                placeholder="Enter your email"
-                className="flex-1 px-4 py-3 rounded-xl border-0 focus:outline-none focus:ring-2 focus:ring-purple-400"
-              />
-              <button className="px-6 py-3 bg-[#7F1416] from-red-900 to-red-800 text-white font-medium rounded-xl hover:from-purple-700 hover:to-pink-700 transition-all duration-200">
-                Subscribe
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
+      
 
       {/* <style jsx>{`
         @keyframes fadeInUp {
