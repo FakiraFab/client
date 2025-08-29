@@ -3,14 +3,14 @@ import { useParams } from 'react-router-dom';
 import ProductCard from '../components/ProductCard';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import apiClient from '../api/client';
-import type { ApiResponse, Product } from '../types';
+import type {  Product } from '../types';
 import FilterTabs from '../components/FilterTabs/FilterTabs';
 
 // Extended ApiResponse type to include categoryImage
-interface CategoryApiResponse<T> extends ApiResponse<T> {
-  categoryImage?: string;
-  categoryName?: string;
-}
+// interface CategoryApiResponse<T> extends ApiResponse<T> {
+//   categoryImage?: string;
+//   categoryName?: string;
+// }
 
 const fetchProductsByCategory = async ({
   pageParam = 1,
@@ -58,9 +58,9 @@ const CategoryPage: React.FC = () => {
   });
 
   // Combine all products from all pages
-  const allProducts = React.useMemo(() => {
-    return data?.pages.flatMap(page => page.data) ?? [];
-  }, [data]);
+  // const allProducts = React.useMemo(() => {
+  //   return data?.pages.flatMap(page => page.data) ?? [];
+  // }, [data]);
 
   // Intersection Observer for infinite scroll
   const observerTarget = React.useRef<HTMLDivElement>(null);

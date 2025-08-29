@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import ProductCard from '../components/ProductCard';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import apiClient from '../api/client';
-import type { Product, ApiResponse } from '../types';
+import type { Product } from '../types';
 
 // Fetch all products with pagination
 const fetchAllProducts = async ({ 
