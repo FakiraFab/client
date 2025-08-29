@@ -2,10 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import apiClient from '../api/client';
+import ProductCard from '../components/ProductCard';
 import type { Product, ApiResponse, Enquiry } from '../types';
 import EnquiryForm from '../../src/components/EnquiryForm/EnquiryForm';
 import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
+import ProductInfoTabs from '../components/ProductInfoTabs/ProductInfoTabs';
 
 const fetchProductDetails = async (productId: string | undefined): Promise<ApiResponse<Product>> => {
   if (!productId) throw new Error('Product ID is required');
@@ -439,7 +441,7 @@ const ProductDetailsPage: React.FC = () => {
         </div>
 
         {/* Product Specifications */}
-        <div className="mt-12 bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        {/* <div className="mt-12 bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <h2 className="text-2xl font-bold text-gray-900 mb-6">Product Specifications</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-4">
@@ -474,36 +476,24 @@ const ProductDetailsPage: React.FC = () => {
           <div className="mt-6 pt-6 border-t border-gray-200">
             <p className="text-gray-700 leading-relaxed">{product.fullDescription}</p>
           </div>
+        </div> */}
+        
+        {/* Product Info Tabs */}
+        <div className="mt-12 ">
+          <ProductInfoTabs />
         </div>
+
+        
+
+
+
 
         {/* Related Products */}
         <div className="mt-12">
           <h2 className="text-2xl font-bold text-gray-900 mb-6">Related Products</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
             {relatedProducts.map((relatedProduct) => (
-              <div key={relatedProduct._id} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
-                <Link to={`/products/${relatedProduct._id}`}>
-                  <img
-                    src={relatedProduct.imageUrl}
-                    alt={relatedProduct.name}
-                    className="w-full h-48 object-contain"
-                  />
-                  <div className="p-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-lg font-bold text-red-600">
-                        ₹{relatedProduct.price.toLocaleString()}
-                      </span>
-                      <span className="text-sm text-gray-500">per metre</span>
-                    </div>
-                    <h3 className="text-sm font-medium text-gray-900 mb-1">
-                      {relatedProduct.name}
-                    </h3>
-                    <p className="text-xs text-gray-500">
-                      {relatedProduct.quantity} metres left
-                    </p>
-                  </div>
-                </Link>
-              </div>
+              <ProductCard key={relatedProduct._id} product={relatedProduct} />
             ))}
           </div>
         </div>
