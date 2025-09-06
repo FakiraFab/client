@@ -86,9 +86,10 @@ const InstagramReels: React.FC<InstagramReelsProps> = ({ reels, title = "Feature
   };
 
   return (
-    <section className="py-16 bg-white">
+    <section className="py-16 ">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between mb-8">
+          
           <h2 className="text-3xl font-bold text-gray-900">{title}</h2>
           <div className="flex space-x-2">
             <button onClick={scrollLeft} className="p-2 rounded-full bg-gray-100 hover:bg-gray-200">
@@ -109,7 +110,7 @@ const InstagramReels: React.FC<InstagramReelsProps> = ({ reels, title = "Feature
             <div
               key={reel._id}
               onClick={() => openModal(index)}
-              className="cursor-pointer flex-shrink-0 w-56 bg-white 3xl shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1 overflow-hidden group"
+              className="cursor-pointer flex-shrink-0 w-56  3xl shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1 overflow-hidden group"
             >
               <div className="relative h-96 overflow-hidden">
                 <video
@@ -123,7 +124,7 @@ const InstagramReels: React.FC<InstagramReelsProps> = ({ reels, title = "Feature
                   className="w-full h-full object-cover"
                   muted
                   loop
-                />
+                />  
 
                 <div className="absolute inset-0 bg-black bg-opacity-20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                   <button

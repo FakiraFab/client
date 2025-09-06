@@ -34,7 +34,7 @@ const Categories: React.FC = () => {
 
   // Function to handle category click and navigate
   const handleCategoryClick = (category: Category) => {
-    const categorySlug = category.slug || category.name.toLowerCase().replace(/\s+/g, '-');
+    const categorySlug = category.slug || category.name;
     navigate(`/category/${categorySlug}`);
   };
 

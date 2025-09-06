@@ -100,7 +100,7 @@ const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose }) => {
       {/* Modal - Fixed positioning with proper responsive behavior */}
       <div className="relative flex flex-col h-full">
         {/* Mobile: Full screen, Desktop: Centered with max height */}
-        <div className="mx-auto w-full h-full flex flex-col 
+        <div className="mx-auto w-full h-full flex flex-col
                         md:max-w-6xl md:my-8 md:mx-4 md:h-auto md:max-h-[calc(100vh-4rem)]">
           
           <div className="bg-white flex flex-col h-full 

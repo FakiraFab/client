@@ -1,15 +1,20 @@
 import React, { useState } from 'react';
 import ProductCard from '../components/ProductCard';
-import { useQuery } from '@tanstack/react-query';
+import { useInfiniteQuery } from '@tanstack/react-query';
 import apiClient from '../api/client';
-import type { Product, ApiResponse } from '../types';
+import type { Product } from '../types';
 
-// Fetch all products
-const fetchAllProducts = async (): Promise<ApiResponse<Product[]>> => {
+// Fetch all products with pagination
+const fetchAllProducts = async ({ 
+  pageParam = 1 
+}: { 
+  pageParam?: number 
+}) => {
   const res = await apiClient.get('/products', {
     params: {
       sort: '-createdAt',
-      limit: 50 // Adjust based on your needs
+      page: pageParam,
+      limit: 12
     }
   });
   return res.data;
@@ -18,16 +23,52 @@ const fetchAllProducts = async (): Promise<ApiResponse<Product[]>> => {
 const AllProducts: React.FC = () => {
   const [sortBy, setSortBy] = useState<string>('featured');
 
-  const { data = { success: true, data: [], pagination: { total: 0, page: 1, pages: 1 } }, isLoading, error } = useQuery({
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading,
+    error
+  } = useInfiniteQuery({
     queryKey: ['allProducts'],
     queryFn: fetchAllProducts,
+    getNextPageParam: (lastPage) => {
+      if (!lastPage.pagination) return undefined;
+      return lastPage.pagination.page < lastPage.pagination.pages ? lastPage.pagination.page + 1 : undefined;
+    },
+    initialPageParam: 1,
   });
+
+  // Intersection Observer for infinite scroll
+  const observerTarget = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+          fetchNextPage();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (observerTarget.current) {
+      observer.observe(observerTarget.current);
+    }
+
+    return () => {
+      if (observerTarget.current) {
+        observer.unobserve(observerTarget.current);
+      }
+    };
+  }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
 
   // Sort products based on selected option
   const sortedProducts = React.useMemo(() => {
-    if (!data.data) return [];
+    if (!data?.pages) return [];
     
-    const products = [...data.data];
+    const products = data.pages.flatMap(page => page.data);
     
     switch (sortBy) {
       case 'price-low':
@@ -41,7 +82,7 @@ const AllProducts: React.FC = () => {
       default:
         return products; // Featured - keep original order
     }
-  }, [data.data, sortBy]);
+  }, [data?.pages, sortBy]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
@@ -178,42 +219,21 @@ const AllProducts: React.FC = () => {
           </div>
         )}
 
-        {/* Load More Section */}
-        {!isLoading && !error && sortedProducts.length > 0 && (
-          <div className="mt-12 sm:mt-16 text-center">
-            <button className="inline-flex items-center px-8 py-4 bg-white border-2 border-gray-200 text-gray-700 font-medium rounded-xl hover:border-purple-300 hover:text-purple-600 transition-all duration-200 shadow-sm hover:shadow-md">
-              <span>Load More Products</span>
-              <svg className="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-              </svg>
-            </button>
+        {/* Infinite Scroll Loading Indicator */}
+        {!error && (hasNextPage || isFetchingNextPage) && (
+          <div 
+            ref={observerTarget}
+            className="mt-8 sm:mt-12 text-center p-4"
+          >
+            <div className="inline-flex items-center gap-2 text-gray-600">
+              <div className="w-4 h-4 border-2 border-[#7F1416] border-t-transparent rounded-full animate-spin"></div>
+              <span>{isFetchingNextPage ? 'Loading more products...' : 'Load more products'}</span>
+            </div>
           </div>
         )}
       </div>
 
-      {/* Newsletter Section */}
-      <div className="bg-gradient-to-r from-slate-900 to-slate-800 mt-16">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
-          <div className="text-center max-w-2xl mx-auto">
-            <h3 className="text-2xl sm:text-3xl font-bold text-white mb-4">
-              Stay In Style
-            </h3>
-            <p className="text-gray-300 mb-8">
-              Get the latest trends, exclusive offers, and style inspiration delivered to your inbox.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
-              <input 
-                type="email" 
-                placeholder="Enter your email"
-                className="flex-1 px-4 py-3 rounded-xl border-0 focus:outline-none focus:ring-2 focus:ring-purple-400"
-              />
-              <button className="px-6 py-3 bg-[#7F1416] from-red-900 to-red-800 text-white font-medium rounded-xl hover:from-purple-700 hover:to-pink-700 transition-all duration-200">
-                Subscribe
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
+      
 
       {/* <style jsx>{`
         @keyframes fadeInUp {

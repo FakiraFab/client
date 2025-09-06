@@ -13,13 +13,54 @@ import type { Category, Product, Reel, Banner, ApiResponse } from '../types';
 import { fetchActiveReels } from '../api/products';
 import { fetchActiveBanners } from '../api/banners';
 import WorkshopSection from '../components/WorkshopSection/WorkshopSection';
-import { FloralPatternSection, BestSellerSection, TouchFeelCreateHero } from '../components/StaticSections';
+import { FloralPatternSection, TouchFeelCreateHero } from '../components/StaticSections';
 import { 
   HeroSkeleton, 
   ReelsGridSkeleton, 
   ProductGridSkeleton, 
   CategoriesGridSkeleton 
 } from '../components/SkeletonLoader';
+import AutoCarousel from '../components/AutoCarousel/AutoCarousel';
+import StaticCarousel from '../components/StaticSections/StaticComponent';
+import FeaturesSection from '../components/StaticSections/FeaturesSection';
+import Testimonials from '../components/Testimonials/Testimonial';
+
+
+
+const slides : string[] = [
+   "Fast Track Shipping",
+  "Free Shipping – Just Spend ₹2000 or More",
+  "Cash on Delivery Accepted", 
+  "Smooth Exchange Process"
+]
+
+
+const sampleImages = [
+
+
+    {
+        _id: '1',
+        image: 'https://vrajbhoomi.in/cdn/shop/files/tulya-banne-3.jpg?v=1755868629&width=2000',
+        title: 'Sample Image 1',
+        ctaText: 'Shop Now',
+        ctaLink: '/categories',
+    },
+    {
+        _id: '2',
+        image: 'https://vrajbhoomi.in/cdn/shop/files/tulya-banner-1_eb4b649d-46eb-46a4-8cfe-b5d0e0e6748a.jpg?v=1755868608&width=2000',
+        title: 'Sample Image 2',
+        ctaText: 'Explore',
+        ctaLink: '/categories',
+    },
+    {
+        _id: '3',
+        image: 'https://vrajbhoomi.in/cdn/shop/files/tulya-banner-2_98501ee1-473c-4f42-a0dc-3ca07e01679b.jpg?v=1755868534&width=2000',
+        title: 'Sample Image 3',
+        ctaText: 'Learn More',
+        ctaLink: '/categories',
+    },
+   
+  ];
 
 // Fetch categories
 const fetchCategories = async ():Promise<Category[]> => {
@@ -245,7 +286,10 @@ const HomePage: React.FC = () => {
           </div>
         </div>
       ) : (
-        <InstagramReels reels={reelsData as Reel[]} title="Featured Reels" />
+        <div className='mt-12 mb-12  bg-gray-50'>
+          <InstagramReels reels={reelsData} />
+        </div>
+        
       )}
 
       {/* New Arrivals Section */}
@@ -275,7 +319,11 @@ const HomePage: React.FC = () => {
           </div>
         </div>
       ) : (
-        <CategoriesGrid categories={mappedCategories} />
+
+        <div className='mt-12 mb-12  bg-gray-50'>
+          <CategoriesGrid categories={mappedCategories} />
+        </div>
+        
       )}
 
     <TouchFeelCreateHero/>
@@ -292,13 +340,34 @@ const HomePage: React.FC = () => {
           </div>
         </div>
       ) : fabricCategory && mappedFabricProducts.length > 0 ? (
-        <ProductsByCategory
+        <div className='mt-12 mb-12 flex justify-center bg-gray-50'>
+          <ProductsByCategory
           title={fabricCategory.name}
           products={mappedFabricProducts}
           filters={['Hand block print', 'Dabu kantha', 'Mul Mul Fabric']}
           onViewAll={() => handleViewAll(fabricCategory._id)}
         />
+
+        </div>
       ) : null}
+
+      
+      
+
+      
+      
+
+
+      {/* 
+        Fix: The 'slides' prop type for AutoCarousel expects 'never[]', but 'slides' is 'string[]'.
+        Solution: If AutoCarousel is meant to accept string[] (e.g., image URLs), update its prop type.
+        If not, and you want to avoid the error for now, cast as 'any' or fix the prop type in AutoCarousel.
+        Here, we cast as 'any[]' to resolve the type error.
+      */}
+      <AutoCarousel
+        slides={slides as []}
+      />
+      
 
       
 
@@ -313,24 +382,49 @@ const HomePage: React.FC = () => {
           </div>
         </div>
       ) : dupattaCategory && mappedDupattaProducts.length > 0 ? (
-        <ProductsByCategory
+        <div className='mt-12 mb-12 flex justify-center bg-gray-50'>
+          <ProductsByCategory
           title={dupattaCategory.name}
           products={mappedDupattaProducts}
           filters={['Ajrakh', 'Dabu kantha', 'Mul Mul Fabric']}
           onViewAll={() => handleViewAll(dupattaCategory._id)}
         />
+        </div>
+
+        
       ) : null}
+
+
+
+      <div className='mt-12 mb-12 flex justify-center'>
+          <StaticCarousel  banners={sampleImages}/>
+      </div>
+
+     
 
       
       {/* Static Floral Pattern Section */}
       <FloralPatternSection />
 
       {/* Static Best Seller Section */}
-      <BestSellerSection />
+      {/* <BestSellerSection /> */}
 
 
       {/* Workshop Section */}
       <WorkshopSection onRegisterClick={handleWorkshopRegister} />
+
+      {/* Features Section */}
+      <div className='mt-12 mb-12 flex justify-center bg-gray-50'>
+        <FeaturesSection/>
+      </div>
+
+      <div className='mt-12 mb-12 flex justify-center bg-gray-50'>
+      <Testimonials/>
+      </div>
+
+      
+
+      
 
       {/* Support Artisans Section */}
       {/* <SupportArtisans /> */}

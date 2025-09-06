@@ -1,6 +1,27 @@
-// import React from 'react';
+import  { useEffect, useRef } from 'react';
 
 const TouchFeelCreateHero = () => {
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          video.play().catch((error) => console.error('Video playback failed:', error));
+        } else {
+          video.pause();
+        }
+      },
+      { threshold: 0.5 } // Play when 50% of video is visible
+    );
+
+    observer.observe(video);
+    return () => observer.disconnect();
+  }, []);
+
   return (
     <section className="w-full h-screen flex flex-col lg:flex-row overflow-hidden bg-gray-100">
       {/* Left Side - Text Content */}
@@ -33,13 +54,16 @@ const TouchFeelCreateHero = () => {
         </div>
       </div>
       
-      {/* Right Side - Full Height Image */}
+      {/* Right Side - Full Height Video */}
       <div className="w-full lg:w-1/2 relative overflow-hidden min-h-[50vh] lg:min-h-screen order-1 lg:order-2">
-        <img
-          src="https://www.fabvoguestudio.com/cdn/shop/files/Mobile_banner_1_d025a821-58f5-4ab7-a50a-4dc56f60584c_1.png?height=1760&v=1753185194"
-          alt="Beautiful fabric rolls showcasing texture and patterns"
+        <video
+          ref={videoRef}
+          src="https://vrajbhoomi.in/cdn/shop/videos/c/vp/ca5595e9f2c04ae1b3ad28eb6abb7f42/ca5595e9f2c04ae1b3ad28eb6abb7f42.SD-480p-1.5Mbps-45298397.mp4?v=0"
           className="w-full h-full object-cover object-center"
-          loading="eager"
+          preload="auto"
+          muted
+          loop
+          playsInline
         />
         
         {/* Subtle overlay for better text contrast if needed */}
