@@ -2,7 +2,7 @@ import React from 'react';
 
 const WorkshopSection: React.FC<{ onRegisterClick: () => void }> = ({ onRegisterClick }) => {
   return (
-    <section className="w-full min-h-screen flex items-center bg-gradient-to-br from-gray-50 to-white relative overflow-hidden">
+    <section className="w-full min-h-screen mt-12 mb-12 flex items-center bg-gradient-to-br from-gray-50 to-white relative overflow-hidden">
       {/* Background Pattern */}
       <div className="absolute inset-0 opacity-5">
         <div className="absolute top-20 left-20 w-32 h-32 border-2 border-gray-300 rounded-full"></div>

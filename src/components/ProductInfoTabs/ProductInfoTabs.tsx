@@ -1,7 +1,11 @@
-import  { useState } from 'react';
-import { Package, Truck, Heart } from 'lucide-react';
+import { useState } from 'react';
+import { Package, Truck } from 'lucide-react';
 
-const ProductInfoTabs = () => {
+interface ProductInfoTabsProps {
+  productDescription: string;
+}
+
+const ProductInfoTabs = ({ productDescription }: ProductInfoTabsProps) => {
   const [activeTab, setActiveTab] = useState('description');
 
   const tabs = [
@@ -17,25 +21,16 @@ const ProductInfoTabs = () => {
         return (
           <div className="space-y-4">
             <ul className="space-y-3">
-              <li className="flex items-start">
-                <span className="w-2 h-2 bg-gray-800 rounded-full mt-2 mr-3 flex-shrink-0"></span>
-                <span className="text-gray-700">Slight variation in color and print is the part of process.</span>
-              </li>
-              <li className="flex items-start">
-                <span className="w-2 h-2 bg-gray-800 rounded-full mt-2 mr-3 flex-shrink-0"></span>
-                <span className="text-gray-700">100% cotton, hand block printed with natural dyes.</span>
-              </li>
-              <li className="flex items-start">
-                <span className="w-2 h-2 bg-gray-800 rounded-full mt-2 mr-3 flex-shrink-0"></span>
-                <span className="text-gray-700">2 Side pockets.</span>
-              </li>
-              <li className="flex items-start">
-                <span className="w-2 h-2 bg-gray-800 rounded-full mt-2 mr-3 flex-shrink-0"></span>
-                <span className="text-gray-700">Full Length is 46"-48".</span>
-              </li>
+              {productDescription.split('\n').map((line, index) => (
+                <li key={index} className="flex items-start">
+                  <span className="w-2 h-2 bg-gray-800 rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                  <span className="text-gray-700">{line}</span>
+                </li>
+              ))}
+              
             </ul>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-8 pt-6 border-t border-gray-200">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mt-8 pt-6 border-t border-gray-200">
               <div className="flex items-center space-x-3 text-sm text-gray-600">
                 <Package className="w-5 h-5" />
                 <span>Free shipping on order above 2000</span>
@@ -43,10 +38,6 @@ const ProductInfoTabs = () => {
               <div className="flex items-center space-x-3 text-sm text-gray-600">
                 <Package className="w-5 h-5" />
                 <span>COD available</span>
-              </div>
-              <div className="flex items-center space-x-3 text-sm text-gray-600">
-                <Heart className="w-5 h-5" />
-                <span>Use code VBLOVE on your first buy</span>
               </div>
               <div className="flex items-center space-x-3 text-sm text-gray-600">
                 <Truck className="w-5 h-5" />
@@ -165,5 +156,3 @@ const ProductInfoTabs = () => {
 };
 
 export default ProductInfoTabs;
-
-

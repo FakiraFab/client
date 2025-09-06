@@ -40,7 +40,7 @@ const CategoriesGrid: React.FC<CategoriesGridProps> = ({ categories, title = "Ca
   };
 
   return (
-    <section className="py-16 bg-white">
+    <section className="py-16 ">
       <div className="container mx-auto px-4">
         <div className="mb-12 flex items-center justify-between">
           <h2 className="text-4xl font-bold text-gray-900">{title}</h2>

@@ -21,7 +21,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   // const [showQuickView, setShowQuickView] = useState(false);
 
-  console.log("Product Card",product);
+  // console.log("Product Card",product);
 
   // const navigate = useNavigate();
   const { addToCart } = useCart();

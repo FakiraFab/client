@@ -1,16 +1,20 @@
 import React from 'react';
 import { Phone, Mail, MapPin, ChevronUp, Instagram, Facebook, Twitter } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link} from 'react-router-dom';
 
 const Footer: React.FC = () => {
+
+  
+
+
   const catalogues = [
-    'Ajrakh Modal Sarees',
-    'Gamthi Sarees',
-    'Vanajavat Maheshwari Sarees'
+    'Sarees',
+    'dupattas',
+    'Bed Sheets',
   ];
 
   const quickLinks = [
-    'About Us',
+    'about',
     'Our Policy',
     'FAQ'
   ];
@@ -28,8 +32,7 @@ const Footer: React.FC = () => {
                 <div>
                   <p className="text-sm opacity-90">Call us at</p>
                   <a href="tel:+91-9911-259-2222" className="hover:text-red-200 transition-colors duration-200">
-                    +91-9911-259-2222
-                  </a>
+                    +91-99980-42577                  </a>
                 </div>
               </div>
 
@@ -46,10 +49,10 @@ const Footer: React.FC = () => {
 
             {/* Social Media Icons */}
             <div className="flex space-x-4 pt-1">
-              <a href="#" className="bg-opacity-20 rounded-full hover:bg-opacity-30 transition-all duration-200">
+              <a href="https://www.instagram.com/fakira_fab16/?hl=en" className="bg-opacity-20 rounded-full hover:bg-opacity-30 transition-all duration-200">
                 <Instagram className="h-5 w-5" />
               </a>
-              <a href="#" className="bg-opacity-20 rounded-full hover:bg-opacity-30 transition-all duration-200">
+              <a href="https://www.facebook.com/61579176027688/" className="bg-opacity-20 rounded-full hover:bg-opacity-30 transition-all duration-200">
                 <Facebook className="h-5 w-5" />
               </a>
               <a href="#" className="bg-opacity-20 rounded-full hover:bg-opacity-30 transition-all duration-200">
@@ -64,14 +67,18 @@ const Footer: React.FC = () => {
             <div className="flex items-start space-x-3">
               <MapPin className="h-5 w-5 mt-1 flex-shrink-0" />
               <div className="text-sm leading-relaxed">
-                <p>Shop no 6/7, Basement, 78 Netajinagar,</p>
-                <p>Motiya Khan Rd, Shahjanabad, Kamal Ganj,</p>
-                <p>New Delhi</p>
-                <p className="mt-2 font-medium">110002</p>
+                
+                <p>Shop number 7, 1 Besides Ashapuranagar,</p>
+                <p>Khodiyar Nagar Rd, Khodiyarnagar, Behrampura,</p>
+                <p>Ahmedabad, Gujarat 382405</p>
+                <p className="mt-2 font-medium">382405</p>
               </div>
             </div>
             <button className="mt-4 border-1 bg-opacity-20 hover:bg-opacity-30 px-4 py-2 rounded-md text-sm font-medium transition-all duration-200">
-              Get Directions
+              <a href="https://share.google/gX6wW8ruKmNVmUhXs" target="_blank" rel="noopener noreferrer">
+                View on Google Maps
+              </a>
+             
             </button>
           </div>
 
@@ -86,7 +93,7 @@ const Footer: React.FC = () => {
             <ul className="space-y-3">
               {catalogues.map((catalogue, index) => (
                 <li key={index}>
-                  <Link to="#" className="text-sm hover:text-red-200 transition-colors duration-200 block py-1">
+                  <Link to={`/category/${catalogue}`} className="text-sm hover:text-red-200 transition-colors duration-200 block py-1">
                     {catalogue}
                   </Link>
                 </li>
@@ -100,8 +107,8 @@ const Footer: React.FC = () => {
             <ul className="space-y-3">
               {quickLinks.map((link, index) => (
                 <li key={index}>
-                  <Link to="#" className="text-sm hover:text-red-200 transition-colors duration-200 block py-1">
-                    {link}
+                  <Link to={link} className="text-sm hover:text-red-200 transition-colors duration-200 block py-1">
+                    {link.charAt(0).toUpperCase() + link.slice(1)}
                   </Link>
                 </li>
               ))}
