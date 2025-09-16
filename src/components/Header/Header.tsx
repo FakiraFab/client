@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-// import { Search, Menu, X, Phone, ShoppingCart, User } from 'lucide-react';
 import { Search, Menu, X, ShoppingCart, User } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -46,12 +45,10 @@ const Header: React.FC = () => {
 
   const categories = [
     'Sarees',
-    'Dress Materials',
+    'Unstitch Fabrics',
     'dupattas',
     'Suits',
     'Bed Sheets',
-    'Cut pieces',
-    'Fabrics'
   ];
 
   const menuVariants = {
@@ -73,145 +70,132 @@ const Header: React.FC = () => {
 
   return (
     <header className={`sticky top-0 bg-white shadow-sm transition-all duration-300 z-50 ${scrolled ? 'py-2 shadow-md' : 'py-0'}`}>
-      {/* Top Bar */}
-      {/* <div className="bg-gradient-to-r from-red-900 to-red-700 text-white">
-        <div className="container mx-auto px-4 flex justify-between items-center py-1">
-          <div className="flex items-center space-x-2 text-xs">
-            <Phone className="h-3 w-3" />
-            <span>+91 1234567890</span>
-          </div>
-          <div className="text-xs">
-            Free shipping on orders over ₹999
-          </div>
-          <div className="flex items-center space-x-4 text-xs">
-            <Link to="/account" className="flex items-center hover:underline">
-              <User className="h-3 w-3 mr-1" /> My Account
-            </Link>
-            <button 
-              onClick={toggleCart}
-              className="flex items-center hover:underline cursor-pointer"
-            >
-              <ShoppingCart className="h-3 w-3 mr-1" /> Cart ({getCartItemCount()})
-            </button>
-          </div>
-        </div>
-      </div> */}
-
       {/* Main Header */}
-      <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between py-4 relative">
-          {/* Mobile Menu Button - Only visible on mobile */}
-          <div className="md:hidden flex items-center">
-            <button
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="p-2 rounded-md text-gray-700 hover:text-red-700 transition-colors duration-200"
-              aria-label="Toggle menu"
-            >
-              {isMenuOpen ? (
-                <X className="h-6 w-6" />
-              ) : (
-                <Menu className="h-6 w-6" />
-              )}
-            </button>
-          </div>
-
-          {/* Logo - Centered on mobile, left-aligned on desktop */}
-          <Link to="/" className="md:flex-shrink-0 absolute left-1/2 transform -translate-x-1/2 md:relative md:left-auto md:transform-none">
-            <img
-              src={logo}
-              alt="Fakira Fab Logo"
-              className={`h-16 transition-all duration-300 ${scrolled ? 'h-12' : 'h-16'} md:h-16 ${scrolled ? 'md:h-12' : 'md:h-16'}`}
-            />
-          </Link>
-
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex space-x-8 mx-8">
-            {navigationItems.map((item) => (
-              <Link
-                key={item.name}
-                to={item.href}
-                className="text-gray-800 hover:text-red-700 font-medium transition-colors duration-200 relative group text-sm uppercase tracking-wider"
+      <div className="w-full max-w-full overflow-hidden">
+        <div className="container mx-auto px-4 max-w-7xl">
+          <div className="flex items-center justify-between py-4 relative min-h-[80px]">
+            {/* Mobile Menu Button - Only visible on mobile */}
+            <div className="md:hidden flex items-center flex-shrink-0">
+              <button
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                className="p-2 rounded-md text-gray-700 hover:text-red-700 transition-colors duration-200"
+                aria-label="Toggle menu"
               >
-                {item.name}
-                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-red-700 transition-all duration-300 group-hover:w-full"></span>
-              </Link>
-            ))}
-          </nav>
+                {isMenuOpen ? (
+                  <X className="h-6 w-6" />
+                ) : (
+                  <Menu className="h-6 w-6" />
+                )}
+              </button>
+            </div>
 
-          {/* Desktop Search Bar */}
-          <div className="hidden lg:flex items-center flex-1 max-w-xl">
-            <div className="relative w-full">
-              <input
-                type="text"
-                placeholder="Search sarees, dress materials, fabrics..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onClick={() => setIsSearchModalOpen(true)}
-                className="w-full py-2 px-4 pr-10 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200 cursor-pointer hover:border-red-300 hover:shadow-sm"
-                readOnly
+            {/* Logo - Responsive sizing and positioning */}
+            <Link 
+              to="/" 
+              className="flex-shrink-0 absolute left-1/2 transform -translate-x-1/2 md:relative md:left-auto md:transform-none z-10"
+            >
+              <img
+                src={logo}
+                alt="Fakira Fab Logo"
+                className={`h-12 sm:h-14 md:h-16 transition-all duration-300 object-contain max-w-full ${
+                  scrolled ? 'h-10 sm:h-12 md:h-12' : 'h-12 sm:h-14 md:h-16'
+                }`}
+                style={{
+                  maxHeight: scrolled ? '48px' : '64px',
+                  width: 'auto'
+                }}
               />
+            </Link>
+
+            {/* Desktop Navigation - Hidden on smaller screens to prevent overflow */}
+            <nav className="hidden lg:flex space-x-6 xl:space-x-8 mx-4 xl:mx-8 flex-shrink-0">
+              {navigationItems.map((item) => (
+                <Link
+                  key={item.name}
+                  to={item.href}
+                  className="text-gray-800 hover:text-red-700 font-medium transition-colors duration-200 relative group text-sm uppercase tracking-wider whitespace-nowrap"
+                >
+                  {item.name}
+                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-red-700 transition-all duration-300 group-hover:w-full"></span>
+                </Link>
+              ))}
+            </nav>
+
+            {/* Desktop Search Bar - Responsive width */}
+            <div className="hidden lg:flex items-center flex-1 max-w-xs xl:max-w-xl min-w-0">
+              <div className="relative w-full">
+                <input
+                  type="text"
+                  placeholder="Search sarees, dress materials..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onClick={() => setIsSearchModalOpen(true)}
+                  className="w-full py-2 px-4 pr-10 xl:pr-16 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200 cursor-pointer hover:border-red-300 hover:shadow-sm text-sm"
+                  readOnly
+                />
+                <button 
+                  onClick={() => setIsSearchModalOpen(true)}
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-red-700 text-white p-1 rounded-full hover:bg-red-800 hover:scale-110 transition-all duration-200"
+                >
+                  <Search className="h-4 w-4" />
+                </button>
+                {/* Keyboard shortcut indicator - Only on larger screens */}
+                <div className="absolute right-12 top-1/2 transform -translate-y-1/2 text-xs text-gray-400 hidden xl:block">
+                  <kbd className="px-2 py-1 bg-gray-100 rounded text-gray-600">⌘K</kbd>
+                </div>
+              </div>
+            </div>
+
+            {/* Icons - Responsive spacing and sizing */}
+            <div className="flex items-center space-x-2 md:space-x-3 xl:space-x-4 flex-shrink-0">
+              {/* Mobile Search Icon */}
               <button 
                 onClick={() => setIsSearchModalOpen(true)}
-                className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-red-700 text-white p-1 rounded-full hover:bg-red-800 hover:scale-110 transition-all duration-200"
+                className="lg:hidden p-2 text-gray-700 hover:text-red-700 transition-colors duration-200"
+                aria-label="Search"
               >
-                <Search className="h-4 w-4" />
+                <Search className="h-5 w-5" />
               </button>
-              {/* Keyboard shortcut indicator */}
-              <div className="absolute right-16 top-1/2 transform -translate-y-1/2 text-xs text-gray-400 hidden lg:block">
-                <kbd className="px-2 py-1 bg-gray-100 rounded text-gray-600">⌘K</kbd>
-              </div>
+
+              {/* Wishlist Icon */}
+              <Link 
+                to="/wishlist" 
+                className="p-2 text-gray-700 hover:text-red-700 relative transition-colors duration-200"
+                aria-label="Wishlist"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                </svg>
+                <span className="absolute -top-1 -right-1 bg-red-700 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center min-w-[16px]">0</span>
+              </Link>
+
+              {/* Cart Icon */}
+              <button 
+                onClick={toggleCart}
+                className="p-2 text-gray-700 hover:text-red-700 relative cursor-pointer transition-colors duration-200"
+                aria-label="Shopping Cart"
+              >
+                <ShoppingCart className="h-5 w-5" />
+                <span className="absolute -top-1 -right-1 bg-red-700 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center min-w-[16px]">
+                  {getCartItemCount()}
+                </span>
+              </button>
             </div>
           </div>
 
-          {/* Icons - Desktop and Mobile */}
-          <div className="flex items-center space-x-2 md:space-x-4 md:ml-4">
-            {/* Mobile Search Icon */}
-            <button 
-              onClick={() => setIsSearchModalOpen(true)}
-              className="md:hidden lg:hidden p-2 text-gray-700 hover:text-red-700 transition-colors duration-200"
-              aria-label="Search"
-            >
-              <Search className="h-5 w-5" />
-            </button>
-
-            {/* Wishlist Icon */}
-            <Link 
-              to="/wishlist" 
-              className="p-2 text-gray-700 hover:text-red-700 relative transition-colors duration-200"
-              aria-label="Wishlist"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-              </svg>
-              <span className="absolute -top-1 -right-1 bg-red-700 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">0</span>
-            </Link>
-
-            {/* Cart Icon */}
-            <button 
-              onClick={toggleCart}
-              className="p-2 text-gray-700 hover:text-red-700 relative cursor-pointer transition-colors duration-200"
-              aria-label="Shopping Cart"
-            >
-              <ShoppingCart className="h-5 w-5" />
-              <span className="absolute -top-1 -right-1 bg-red-700 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
-                {getCartItemCount()}
-              </span>
-            </button>
-          </div>
-        </div>
-
-        {/* Category Navigation - Desktop only */}
-        <div className="hidden md:flex justify-center py-3 border-t border-gray-100">
-          <div className="flex space-x-6">
-            {categories.map((category) => (
-              <Link
-                key={category}
-                to={`/category/${category}`}
-                className="text-xs font-medium text-gray-600 hover:text-red-700 transition-colors duration-200 uppercase tracking-wider"
-              >
-                {category}
-              </Link>
-            ))}
+          {/* Category Navigation - Desktop only, responsive text */}
+          <div className="hidden md:flex justify-center py-3 border-t border-gray-100 overflow-x-auto">
+            <div className="flex space-x-4 lg:space-x-6 px-4">
+              {categories.map((category) => (
+                <Link
+                  key={category}
+                  to={`/category/${category}`}
+                  className="text-xs font-medium text-gray-600 hover:text-red-700 transition-colors duration-200 uppercase tracking-wider whitespace-nowrap"
+                >
+                  {category}
+                </Link>
+              ))}
+            </div>
           </div>
         </div>
       </div>
@@ -263,8 +247,8 @@ const Header: React.FC = () => {
                       className="text-sm py-2 px-3 bg-gray-50 hover:bg-red-50 text-gray-700 hover:text-red-700 rounded-md transition-colors duration-200 flex items-center"
                       onClick={() => setIsMenuOpen(false)}
                     >
-                      <span>{category}</span>
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-auto opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <span className="truncate">{category}</span>
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-auto opacity-70 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                       </svg>
                     </Link>
