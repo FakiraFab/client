@@ -129,7 +129,7 @@ const ProductDetailsPage: React.FC = () => {
     if (selectedVariant >= 0 && product?.variants && product.variants[selectedVariant]) {
       return product.variants[selectedVariant].color;
     }
-    return product?.specifications?.color || 'Default';
+    return product?.color || 'Default';
   };
 
   const openEnquiryForm = () => {
@@ -211,14 +211,14 @@ const ProductDetailsPage: React.FC = () => {
         </div>
       )}
 
-      {/* Breadcrumb */}
+       {/* Breadcrumb */}
       <div className="bg-white py-4 border-b">
         <div className="container mx-auto px-6">
           <nav className="text-sm text-gray-600">
             <Link to="/" className="hover:text-red-600">Home</Link>
             <span className="mx-2">/</span>
-            <Link to={`/category/${product.category.name}`} className="hover:text-red-600">
-              {product.category.name}
+            <Link to={`/category/${product.category?.name ?? ''}`} className="hover:text-red-600">
+              {product.category?.name ?? ''}
             </Link>
             <span className="mx-2">/</span>
             <span className="text-gray-900">{product.name}</span>
@@ -354,7 +354,7 @@ const ProductDetailsPage: React.FC = () => {
                         ? 'ring-2 ring-offset-2 ring-red-600' 
                         : 'ring-1 ring-gray-200'
                     }`}
-                    style={{ backgroundColor: product.specifications?.color?.toLowerCase() }}
+                    style={{ backgroundColor: product.color?.toLowerCase() }}
                   >
                     {selectedVariant === -1 && (
                       <span className="text-white text-xs">✓</span>

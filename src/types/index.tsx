@@ -27,12 +27,13 @@ export interface ProductSpecifications {
 export interface Product {
   _id: string;
   name: string;
-  subcategory: { _id: string; name: string };
-  category: { _id: string; name: string };
+  subcategory?: { _id: string; name: string } | null;
+  category?: { _id: string; name: string } | null;
   description: string;
   price: number;
   imageUrl: string;
   quantity: number;
+  color?:string;
   options: ProductOption[];
   createdAt: string;
   updatedAt: string;
@@ -119,7 +120,8 @@ export interface Banner {
   _id: string;
   title?: string;
   description?: string;
-  image: string;
+  imageDesktop: string;
+  imageMobile?:string;
   ctaText?: string;
   ctaLink?: string;
   isActive: boolean;

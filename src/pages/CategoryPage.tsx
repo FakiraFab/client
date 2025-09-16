@@ -3,14 +3,8 @@ import { useParams } from 'react-router-dom';
 import ProductCard from '../components/ProductCard';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import apiClient from '../api/client';
-import type {  Product } from '../types';
+import type { Product } from '../types';
 import FilterTabs from '../components/FilterTabs/FilterTabs';
-
-// Extended ApiResponse type to include categoryImage
-// interface CategoryApiResponse<T> extends ApiResponse<T> {
-//   categoryImage?: string;
-//   categoryName?: string;
-// }
 
 const fetchProductsByCategory = async ({
   pageParam = 1,
@@ -56,11 +50,6 @@ const CategoryPage: React.FC = () => {
     enabled: !!categoryId,
     initialPageParam: 1,
   });
-
-  // Combine all products from all pages
-  // const allProducts = React.useMemo(() => {
-  //   return data?.pages.flatMap(page => page.data) ?? [];
-  // }, [data]);
 
   // Intersection Observer for infinite scroll
   const observerTarget = React.useRef<HTMLDivElement>(null);
@@ -115,17 +104,23 @@ const CategoryPage: React.FC = () => {
     }
   }, [data?.pages, sortBy]);
 
-  const displayCategoryName = data?.pages[0]?.data[0]?.category?.name || 
+
+  const displayDescription = data?.pages[0]?.category?.description || 
+    `Explore our exclusive collection of premium ${categoryId?.replace(/-/g, ' ').toLowerCase()} designed to elevate your style and comfort.`;
+
+  const displayCategoryName = data?.pages[0]?.category?.name || 
     categoryId?.replace(/-/g, ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
-  const fallbackImage = "https://www.fabvoguestudio.com/cdn/shop/collections/co-fresh-designs.jpg?v=1742118562&width=1950";
+  const categoryBannerImage = data?.pages[0]?.category?.categoryBannerImage || 
+    "https://www.fabvoguestudio.com/cdn/shop/collections/co-fresh-designs.jpg?v=1742118562&width=1950";
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
       {/* Hero Header Section */}
       <div className="relative h-64 sm:h-80 lg:h-96 overflow-hidden">
         {/* Category Background Image */}
-        {data?.pages[0]?.categoryImage && !imageError ? (
+        {!imageError ? (
           <img 
-            src={data.pages[0].categoryImage} 
+            src={categoryBannerImage} 
             alt={displayCategoryName}
             className="absolute inset-0 w-full h-full object-cover transition-opacity duration-500"
             onError={() => setImageError(true)}
@@ -133,7 +128,7 @@ const CategoryPage: React.FC = () => {
           />
         ) : (
           <img 
-            src={fallbackImage} 
+            src="https://www.fabvoguestudio.com/cdn/shop/collections/co-fresh-designs.jpg?v=1742118562&width=1950" 
             alt="Category Background"
             className="absolute inset-0 w-full h-full object-cover"
           />
@@ -149,7 +144,7 @@ const CategoryPage: React.FC = () => {
               {displayCategoryName}
             </h1>
             <p className="text-lg sm:text-xl text-gray-300 max-w-2xl mx-auto leading-relaxed">
-              Discover our curated collection of premium {displayCategoryName?.toLowerCase()} designed for the modern lifestyle
+              {displayDescription}
             </p>
             <div className="mt-8 flex justify-center">
               <div className="w-40 h-1 bg-white rounded-full"></div>
@@ -320,8 +315,6 @@ const CategoryPage: React.FC = () => {
           </div>
         )}
       </div>
-
-     
 
       <style>{`
         @keyframes fadeInUp {
