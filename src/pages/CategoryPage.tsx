@@ -1,22 +1,28 @@
 import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import ProductCard from '../components/ProductCard';
-import { useQuery } from '@tanstack/react-query';
+import { useInfiniteQuery } from '@tanstack/react-query';
 import apiClient from '../api/client';
-import type { ApiResponse, Product } from '../types';
+import type { Product } from '../types';
 import FilterTabs from '../components/FilterTabs/FilterTabs';
 
-// Extended ApiResponse type to include categoryImage
-interface CategoryApiResponse<T> extends ApiResponse<T> {
-  categoryImage?: string;
-  categoryName?: string;
-}
+const fetchProductsByCategory = async ({
+  pageParam = 1,
+  queryKey,
+}: {
+  pageParam?: number;
+  queryKey: (string | undefined)[];
+}) => {
+  const [, categoryId, type] = queryKey as [string, string | undefined, string];
+  if (!categoryId) return { 
+    success: true, 
+    data: [], 
+    filters: { subCategories: [] }, 
+    pagination: { total: 0, page: 1, pages: 1 } 
+  };
 
-const fetchProductsByCategory = async (categoryId: string | undefined, type: string): Promise<CategoryApiResponse<Product[]>> => {
-  if (!categoryId) return { success: true, data: [], filters: { subCategories: [] }, pagination: { total: 0, page: 1, pages: 1 } };
   const query = type === 'All' ? '' : `&subcategory=${type}`;
-  const res = await apiClient.get(`/products?category=${categoryId}${query}`);
-  console.log(res.data);
+  const res = await apiClient.get(`/products?category=${categoryId}${query}&page=${pageParam}&limit=12`);
   return res.data;
 };
 
@@ -27,11 +33,47 @@ const CategoryPage: React.FC = () => {
   const [imageError, setImageError] = useState<boolean>(false);
   const [isFiltering, setIsFiltering] = useState<boolean>(false);
 
-  const { data = { success: true, data: [], filters: { subCategories: [] }, pagination: { total: 0, page: 1, pages: 1 } }, isLoading, error } = useQuery({
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading,
+    error
+  } = useInfiniteQuery({
     queryKey: ['products', categoryId, selectedType],
-    queryFn: () => fetchProductsByCategory(categoryId, selectedType),
+    queryFn: fetchProductsByCategory,
+    getNextPageParam: (lastPage) => {
+      if (!lastPage.pagination) return undefined;
+      return lastPage.pagination.page < lastPage.pagination.pages ? lastPage.pagination.page + 1 : undefined;
+    },
     enabled: !!categoryId,
+    initialPageParam: 1,
   });
+
+  // Intersection Observer for infinite scroll
+  const observerTarget = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+          fetchNextPage();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (observerTarget.current) {
+      observer.observe(observerTarget.current);
+    }
+
+    return () => {
+      if (observerTarget.current) {
+        observer.unobserve(observerTarget.current);
+      }
+    };
+  }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
 
   // Handle filter changes with loading state
   const handleFilterChange = (newType: string) => {
@@ -43,9 +85,9 @@ const CategoryPage: React.FC = () => {
 
   // Sort products based on selected sort option
   const sortedProducts = React.useMemo(() => {
-    if (!data.data) return [];
+    if (!data?.pages) return [];
     
-    const products = [...data.data];
+    const products = data.pages.flatMap(page => page.data);
     
     switch (sortBy) {
       case 'Price: Low to High':
@@ -55,24 +97,30 @@ const CategoryPage: React.FC = () => {
       case 'Newest':
         return products.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
       case 'Best Selling':
-        // For now, we'll sort by quantity (assuming higher quantity means more popular)
         return products.sort((a, b) => b.quantity - a.quantity);
       case 'Featured':
       default:
-        return products; // Keep original order
+        return products;
     }
-  }, [data.data, sortBy]);
+  }, [data?.pages, sortBy]);
 
-  const displayCategoryName = data.data[0]?.category?.name || categoryId?.replace(/-/g, ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
-  const fallbackImage = "https://www.fabvoguestudio.com/cdn/shop/collections/co-fresh-designs.jpg?v=1742118562&width=1950";
+
+  const displayDescription = data?.pages[0]?.category?.description || 
+    `Explore our exclusive collection of premium ${categoryId?.replace(/-/g, ' ').toLowerCase()} designed to elevate your style and comfort.`;
+
+  const displayCategoryName = data?.pages[0]?.category?.name || 
+    categoryId?.replace(/-/g, ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+  const categoryBannerImage = data?.pages[0]?.category?.categoryBannerImage || 
+    "https://www.fabvoguestudio.com/cdn/shop/collections/co-fresh-designs.jpg?v=1742118562&width=1950";
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
       {/* Hero Header Section */}
       <div className="relative h-64 sm:h-80 lg:h-96 overflow-hidden">
         {/* Category Background Image */}
-        {data?.imageUrl && !imageError ? (
+        {!imageError ? (
           <img 
-            src={data.imageUrl} 
+            src={categoryBannerImage} 
             alt={displayCategoryName}
             className="absolute inset-0 w-full h-full object-cover transition-opacity duration-500"
             onError={() => setImageError(true)}
@@ -80,7 +128,7 @@ const CategoryPage: React.FC = () => {
           />
         ) : (
           <img 
-            src={fallbackImage} 
+            src="https://www.fabvoguestudio.com/cdn/shop/collections/co-fresh-designs.jpg?v=1742118562&width=1950" 
             alt="Category Background"
             className="absolute inset-0 w-full h-full object-cover"
           />
@@ -96,7 +144,7 @@ const CategoryPage: React.FC = () => {
               {displayCategoryName}
             </h1>
             <p className="text-lg sm:text-xl text-gray-300 max-w-2xl mx-auto leading-relaxed">
-              Discover our curated collection of premium {displayCategoryName?.toLowerCase()} designed for the modern lifestyle
+              {displayDescription}
             </p>
             <div className="mt-8 flex justify-center">
               <div className="w-40 h-1 bg-white rounded-full"></div>
@@ -112,7 +160,7 @@ const CategoryPage: React.FC = () => {
             categoryId={categoryId} 
             selectedType={selectedType} 
             onSelect={handleFilterChange} 
-            subCategories={data.filters?.subCategories || []} 
+            subCategories={data?.pages[0]?.filters?.subCategories || []} 
           />
         </div>
       </div>
@@ -254,20 +302,19 @@ const CategoryPage: React.FC = () => {
           </div>
         )}
 
-        {/* Load More Section */}
-        {!isLoading && !isFiltering && !error && sortedProducts && sortedProducts.length > 0 && (
-          <div className="mt-12 sm:mt-16 text-center">
-            <button className="inline-flex items-center px-8 py-4 bg-white border-2 border-gray-200 text-gray-700 font-medium rounded-xl  hover:text-[#7F1416] transition-all duration-200 shadow-sm hover:shadow-md">
-              <span>Load More Products</span>
-              <svg className="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-              </svg>
-            </button>
+        {/* Infinite Scroll Loading Indicator */}
+        {!error && (hasNextPage || isFetchingNextPage) && (
+          <div 
+            ref={observerTarget}
+            className="mt-8 sm:mt-12 text-center p-4"
+          >
+            <div className="inline-flex items-center gap-2 text-gray-600">
+              <div className="w-4 h-4 border-2 border-[#7F1416] border-t-transparent rounded-full animate-spin"></div>
+              <span>{isFetchingNextPage ? 'Loading more products...' : 'Load more products'}</span>
+            </div>
           </div>
         )}
       </div>
-
-     
 
       <style>{`
         @keyframes fadeInUp {

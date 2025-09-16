@@ -21,13 +21,33 @@ const ProductCard = ({ product }: ProductCardProps) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   // const [showQuickView, setShowQuickView] = useState(false);
 
-  console.log("Product Card",product);
+  // console.log("Product Card",product);
 
   // const navigate = useNavigate();
   const { addToCart } = useCart();
   const { showToast } = useToast();
   
+  // Get product images and optimize them for display
   const images = product.images && product.images.length > 0 ? product.images : [product.imageUrl];
+  
+  // Function to optimize Cloudinary images
+  const getOptimizedImageUrl = (url: string) => {
+    // Check if it's a Cloudinary URL
+    if (url && url.includes('cloudinary.com')) {
+      // Add transformation parameters to prevent cropping and optimize loading
+      // c_fill ensures the image fills the container while maintaining aspect ratio
+      // ar_1:1 sets a perfect square aspect ratio which is standard for e-commerce product cards
+      // g_auto uses automatic gravity to focus on the important part of the image
+      // q_auto optimizes quality, f_auto optimizes format
+      
+      // Extract the version part to ensure compatibility with the URL format
+      const parts = url.split('/upload/');
+      if (parts.length === 2) {
+        return `${parts[0]}/upload/c_fill,ar_1:1,g_auto,q_auto,f_auto/${parts[1]}`;
+      }
+    }
+    return url;
+  };
   const hasMultipleImages = images.length > 1;
   const isLowStock = product.quantity <= 5;
   const isOutOfStock = product.quantity === 0;
@@ -82,12 +102,13 @@ const ProductCard = ({ product }: ProductCardProps) => {
   };
 
   return (
-    <div className="group relative">
+    <div className="group relative w-full sm:max-w-sm md:max-w-md lg:max-w-lg mx-auto">
       {/* Full Image Container with Clickable Link */}
       <Link to={`/products/${product._id}`} className="block">
-        <div className="relative overflow-hidden bg-gray-50 h-64 sm:h-72 md:h-80 lg:h-96 xl:h-[400px]">
+        {/* <div className="relative overflow-hidden bg-gray-50 h-64 sm:h-72 md:h-80 lg:h-96 xl:h-[400px]"> */}
+        <div className="relative overflow-hidden bg-gray-50 aspect-square">
           <img
-            src={images[currentImageIndex]}
+            src={getOptimizedImageUrl(images[currentImageIndex])}
             alt={product.name}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
             loading="lazy"
@@ -184,10 +205,12 @@ const ProductCard = ({ product }: ProductCardProps) => {
       <div className="mt-3 space-y-2">
         {/* Category and Subcategory */}
         <div className="flex items-center gap-2">
-          <span className="text-xs text-gray-600 bg-gray-100 px-2 py-1 rounded-full">
-            {product.category.name}
-          </span>
-          {product.subcategory.name && (
+          {product.category?.name && (
+            <span className="text-xs text-gray-600 bg-gray-100 px-2 py-1 rounded-full">
+              {product.category.name}
+            </span>
+          )}
+          {product.subcategory?.name && (
             <span className="text-xs text-[#7F1416] bg-red-50 px-2 py-1 rounded-full">
               {product.subcategory.name}
             </span>

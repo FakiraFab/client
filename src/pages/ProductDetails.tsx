@@ -2,10 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import apiClient from '../api/client';
+import ProductCard from '../components/ProductCard';
 import type { Product, ApiResponse, Enquiry } from '../types';
 import EnquiryForm from '../../src/components/EnquiryForm/EnquiryForm';
 import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
+import ProductInfoTabs from '../components/ProductInfoTabs/ProductInfoTabs';
+import KnowYourGarment from '../components/KnowYourGarment/KnowYourGarment';
+import ModernProductSpecs from '../components/ModernProductSpecs/ModernProductSpecs';
 
 const fetchProductDetails = async (productId: string | undefined): Promise<ApiResponse<Product>> => {
   if (!productId) throw new Error('Product ID is required');
@@ -39,6 +43,7 @@ const ProductDetailsPage: React.FC = () => {
   });
 
   const product = productData?.data || null;
+  console.log('Product Data:', product);
   const categoryId = product?.category?._id;
 
   const { data: relatedProductsData } = useQuery({
@@ -124,7 +129,7 @@ const ProductDetailsPage: React.FC = () => {
     if (selectedVariant >= 0 && product?.variants && product.variants[selectedVariant]) {
       return product.variants[selectedVariant].color;
     }
-    return product?.specifications?.color || 'Default';
+    return product?.color || 'Default';
   };
 
   const openEnquiryForm = () => {
@@ -206,14 +211,14 @@ const ProductDetailsPage: React.FC = () => {
         </div>
       )}
 
-      {/* Breadcrumb */}
+       {/* Breadcrumb */}
       <div className="bg-white py-4 border-b">
         <div className="container mx-auto px-6">
           <nav className="text-sm text-gray-600">
             <Link to="/" className="hover:text-red-600">Home</Link>
             <span className="mx-2">/</span>
-            <Link to={`/category/${product.category.name}`} className="hover:text-red-600">
-              {product.category.name}
+            <Link to={`/category/${product.category?.name ?? ''}`} className="hover:text-red-600">
+              {product.category?.name ?? ''}
             </Link>
             <span className="mx-2">/</span>
             <span className="text-gray-900">{product.name}</span>
@@ -222,15 +227,10 @@ const ProductDetailsPage: React.FC = () => {
       </div>
 
       {/* Product Details */}
-      <div className="container mx-auto px-6 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-        
-
-
-
-
-{/* Product Images */}
-<div>
+      <div className="container mx-auto px-4 lg:px-6 py-6 lg:py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
+          {/* Product Images */}
+  <div>
   {/* Desktop Layout - Thumbnail Strip + Main Image */}
   <div className="hidden lg:flex gap-4">
     {/* Thumbnail Strip - Left Side */}
@@ -343,171 +343,136 @@ const ProductDetailsPage: React.FC = () => {
             </div>
 
             {product.variants && product.variants.length > 0 && (
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">Color Options</h3>
+              <div className="bg-white p-4 rounded-lg border border-gray-100 shadow-sm">
+                <h3 className="text-sm font-medium text-gray-900 mb-3">Color Options</h3>
                 <div className="flex flex-wrap gap-3">
-                  {/* Default/Primary Product Option */}
+                  {/* Default product option */}
                   <button
-                    onClick={() => setSelectedVariant(-1)}
-                    className={`px-3 py-2 text-sm border-2 rounded-lg ${
-                      selectedVariant === -1 ? 'border-red-600 bg-red-50 text-red-600' : 'border-gray-300'
+                    onClick={() => handleVariantSelect(-1)}
+                    className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                      selectedVariant === -1 
+                        ? 'ring-2 ring-offset-2 ring-red-600' 
+                        : 'ring-1 ring-gray-200'
                     }`}
+                    style={{ backgroundColor: product.color?.toLowerCase() }}
                   >
-                    Default
+                    {selectedVariant === -1 && (
+                      <span className="text-white text-xs">✓</span>
+                    )}
                   </button>
-                  
+                  {/* Variant options */}
                   {product.variants.map((variant, index) => (
                     <button
-                      key={variant.id}
+                      key={index}
                       onClick={() => handleVariantSelect(index)}
-                      className={`w-12 h-12 rounded-lg border-2 relative ${
-                        selectedVariant === index ? 'border-red-600' : 'border-gray-200'
+                      className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                        selectedVariant === index 
+                          ? 'ring-2 ring-offset-2 ring-red-600' 
+                          : 'ring-1 ring-gray-200'
                       }`}
-                      style={{ backgroundColor: variant.colorCode }}
-                      title={variant.color}
+                      style={{ backgroundColor: variant.color?.toLowerCase() }}
                     >
-                      {variant.colorCode === '#ffffff' && (
-                        <div className="absolute inset-0 rounded-lg border border-gray-300"></div>
+                      {selectedVariant === index && (
+                        <span className="text-white text-xs">✓</span>
                       )}
                     </button>
                   ))}
                 </div>
-                <p className="text-sm text-gray-600 mt-2">
+                <p className="text-xs text-gray-600 mt-2">
                   Selected: {getCurrentColor()}
                 </p>
               </div>
             )}
 
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Quantity</h3>
-              <div className="flex items-center space-x-4 mb-4">
-                <div className="flex items-center border border-gray-300 rounded-lg">
+            <div className="bg-white p-4 rounded-lg border border-gray-100 shadow-sm">
+              <h3 className="text-sm font-medium text-gray-900 mb-3">Quantity</h3>
+              <div className="flex items-center space-x-4 mb-3">
+                <div className="flex items-center border border-gray-200 rounded-lg overflow-hidden">
                   <button
                     onClick={() => handleQuantityChange(-1)}
-                    className="px-3 py-2 hover:bg-gray-100 text-lg"
+                    className="px-3 py-2 bg-gray-50 hover:bg-gray-100 text-gray-600"
                   >
                     -
                   </button>
-                  <span className="px-4 py-2 font-medium min-w-[80px] text-center">
-                    {quantity} {product.unit || 'meter'}
-                  </span>
+                  <span className="px-4 py-2 border-x border-gray-200">{quantity}</span>
                   <button
                     onClick={() => handleQuantityChange(1)}
-                    className="px-3 py-2 hover:bg-gray-100 text-lg"
+                    className="px-3 py-2 bg-gray-50 hover:bg-gray-100 text-gray-600"
                   >
                     +
                   </button>
                 </div>
               </div>
               <div className="flex flex-wrap gap-2">
-                {product.unit === 'piece' ? [1, 2, 5, 10] : [1, 2.5, 5, 10].map((qty) => (
+                {(product.unit === 'piece' ? [1, 2, 5, 10] : [1, 2.5, 5, 10]).map((qty) => (
                   <button
                     key={qty}
                     onClick={() => handleQuickQuantitySelect(qty)}
-                    className={`px-4 py-2 border rounded-lg text-sm transition-colors ${
-                      quantity === qty 
-                        ? 'border-red-600 bg-red-50 text-red-600' 
-                        : 'border-gray-300 hover:bg-gray-50'
+                    className={`px-3 py-1.5 rounded-full text-sm ${
+                      quantity === qty
+                        ? 'bg-red-50 text-red-600 border border-red-200'
+                        : 'bg-gray-50 text-gray-600 border border-gray-200 hover:bg-gray-100'
                     }`}
                   >
-                    {qty} {product.unit || 'meter'}{qty > 1 ? 's' : ''}
+                    {qty} {product.unit}
                   </button>
                 ))}
               </div>
-              <p className="text-sm text-gray-600 mt-2">
-                ≈ {getCurrentQuantity()} Meters in stock
+              <p className="text-xs text-gray-600 mt-2">
+                ≈ {getCurrentQuantity()} {product.unit}s in stock
               </p>
             </div>
 
-            <div className="space-y-3">
+            <div className="flex gap-3">
               <button 
                 onClick={handleAddToCart}
-                className="w-full bg-gray-800 text-white py-3 rounded-lg font-semibold hover:bg-gray-900 transition-colors"
+                className="flex-1 bg-gray-900 text-white py-2.5 rounded-lg font-medium text-sm hover:bg-gray-800 transition-colors"
               >
                 Add to Cart
               </button>
               
               <button 
                 onClick={openEnquiryForm}
-                className="w-full bg-red-600 text-white py-3 rounded-lg font-semibold hover:bg-red-700 transition-colors"
+                className="flex-1 bg-red-600 text-white py-2.5 rounded-lg font-medium text-sm hover:bg-red-700 transition-colors"
                 disabled={isSubmitting}
               >
                 {isSubmitting ? 'Submitting...' : 'Enquire Now'}
               </button>
             </div>
           </div>
-        </div>
+          </div>
 
-        {/* Product Specifications */}
-        <div className="mt-12 bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Product Specifications</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-4">
-              <div className="flex justify-between py-2 border-b border-gray-200">
-                <span className="font-medium text-gray-700">Material</span>
-                <span className="text-gray-900">{product.specifications?.material}</span>
-              </div>
-              <div className="flex justify-between py-2 border-b border-gray-200">
-                <span className="font-medium text-gray-700">Color</span>
-                <span className="text-gray-900">{getCurrentColor()}</span>
-              </div>
-              <div className="flex justify-between py-2 border-b border-gray-200">
-                <span className="font-medium text-gray-700">Style</span>
-                <span className="text-gray-900">{product.specifications?.style}</span>
-              </div>
-            </div>
-            <div className="space-y-4">
-              <div className="flex justify-between py-2 border-b border-gray-200">
-                <span className="font-medium text-gray-700">Length</span>
-                <span className="text-gray-900">{product.specifications?.length}</span>
-              </div>
-              <div className="flex justify-between py-2 border-b border-gray-200">
-                <span className="font-medium text-gray-700">Blouse Piece</span>
-                <span className="text-gray-900">{product.specifications?.blousePiece}</span>
-              </div>
-              <div className="flex justify-between py-2 border-b border-gray-200">
-                <span className="font-medium text-gray-700">Design No</span>
-                <span className="text-gray-900">{product.specifications?.designNo}</span>
-              </div>
-            </div>
-          </div>
-          <div className="mt-6 pt-6 border-t border-gray-200">
-            <p className="text-gray-700 leading-relaxed">{product.fullDescription}</p>
-          </div>
+        {/* Product Description */}
+        <ModernProductSpecs product={product} getCurrentColor={getCurrentColor} />
+        
+        {/* Product Info Tabs */}
+        <div className="mt-12 ">
+          <ProductInfoTabs productDescription={product.fullDescription || ''} />
         </div>
 
         {/* Related Products */}
         <div className="mt-12">
           <h2 className="text-2xl font-bold text-gray-900 mb-6">Related Products</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
             {relatedProducts.map((relatedProduct) => (
-              <div key={relatedProduct._id} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
-                <Link to={`/products/${relatedProduct._id}`}>
-                  <img
-                    src={relatedProduct.imageUrl}
-                    alt={relatedProduct.name}
-                    className="w-full h-48 object-contain"
-                  />
-                  <div className="p-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-lg font-bold text-red-600">
-                        ₹{relatedProduct.price.toLocaleString()}
-                      </span>
-                      <span className="text-sm text-gray-500">per metre</span>
-                    </div>
-                    <h3 className="text-sm font-medium text-gray-900 mb-1">
-                      {relatedProduct.name}
-                    </h3>
-                    <p className="text-xs text-gray-500">
-                      {relatedProduct.quantity} metres left
-                    </p>
-                  </div>
-                </Link>
-              </div>
+              <ProductCard key={relatedProduct._id} product={relatedProduct} />
             ))}
           </div>
         </div>
+
+        {/* Know your garment */}
+        <div className="mt-12">
+          {/* Assuming KnowYourGarmentCarousel is imported */}
+          <KnowYourGarment />
+        </div>
+
+
+
       </div>
+
+     
+
+
 
       {/* Enquiry Form Modal */}
       <EnquiryForm
