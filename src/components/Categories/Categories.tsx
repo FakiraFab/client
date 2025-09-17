@@ -16,7 +16,7 @@ interface Category {
 
 // ✅ Updated Cloudinary transformation helper for better image fit
 const getTransformedImage = (url: string, width = 400, height = 300) => {
-  console.log("Function called with URL", url);
+  // console.log("Function called with URL", url);
   if (!url.includes('/upload/')) return url; // not a cloudinary url
   
   // Using crop fill with gravity face for models, or center for fabric patterns
@@ -45,7 +45,7 @@ const Categories: React.FC = () => {
     queryFn: fetchCategories,
   });
 
-  console.log("Categories Data", categoriesData);
+  // console.log("Categories Data", categoriesData);
 
   // Function to handle category click and navigate
   const handleCategoryClick = (category: Category) => {

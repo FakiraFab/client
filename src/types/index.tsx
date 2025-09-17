@@ -107,6 +107,7 @@ export interface Reel {
   title: string;
   description?: string;
   videoUrl: string;
+  thumbnail: string;
   thumbnailUrl?: string;
   price?: number;
   isActive: boolean;
