@@ -10,17 +10,17 @@ const Carousel: React.FC<CarouselProps> = ({ banners }) => {
   const [imageError, setImageError] = useState<{ [key: string]: boolean }>({});
   const [isMobile, setIsMobile] = useState<boolean>(window.innerWidth < 768);
 
-  // ✅ Filter out inactive banners
+  // ✅ Only active banners
   const activeBanners = banners.filter((banner) => banner.isActive);
 
-  // ✅ Listen for window resize to adapt between desktop ↔ mobile
+  // ✅ Resize listener
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Autoplay
+  // ✅ Autoplay
   useEffect(() => {
     if (activeBanners.length <= 1) return;
     const interval = setInterval(() => {
@@ -48,21 +48,24 @@ const Carousel: React.FC<CarouselProps> = ({ banners }) => {
   };
 
   return (
-    <div className="relative w-full h-[50vh] sm:h-[60vh] md:h-[80vh] lg:h-[90vh] overflow-hidden bg-gray-100">
+    <div className="relative w-full overflow-hidden bg-gray-100">
       {/* Carousel Items */}
       <div
-        className="flex transition-transform duration-700 ease-in-out h-full"
+        className="flex transition-transform duration-700 ease-in-out w-full"
         style={{ transform: `translateX(-${currentIndex * 100}%)` }}
       >
         {activeBanners.map((banner) => {
-          const imageUrl = isMobile && banner.imageMobile
-            ? getOptimizedUrl(banner.imageMobile, true)
-            : getOptimizedUrl(banner.imageDesktop, false);
+          const isPortrait = isMobile && banner.imageMobile;
+          const imageUrl = isPortrait
+            ? getOptimizedUrl(banner.imageMobile!, true)
+            : getOptimizedUrl(banner.imageDesktop!, false);
 
           return (
             <div
               key={banner._id}
-              className="min-w-full h-full relative flex justify-center items-center"
+              className={`min-w-full relative flex justify-center items-center ${
+                isPortrait ? 'aspect-[3/4]' : 'aspect-[2.25/1]'
+              }`}
             >
               {imageError[banner._id] ? (
                 <div className="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
@@ -75,7 +78,7 @@ const Carousel: React.FC<CarouselProps> = ({ banners }) => {
                 <img
                   src={imageUrl}
                   alt={banner.title || `Banner ${banner._id}`}
-                  className="w-full h-full object-cover"
+                  className="absolute inset-0 w-full h-full object-cover"
                   loading="lazy"
                   onError={() => handleImageError(banner._id)}
                 />

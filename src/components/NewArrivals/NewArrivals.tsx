@@ -14,7 +14,7 @@ const NewArrivals: React.FC<NewArrivalsProps> = ({ products }) => {
   const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(null);
   const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);
   
-  console.log('New Arrivals Products:', products);
+  //console.log('New Arrivals Products:', products);
   
   // const handleProductClick = (productId: string) => {
   //   navigate(`/products/${productId}`);

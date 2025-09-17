@@ -14,7 +14,7 @@ import ModernProductSpecs from '../components/ModernProductSpecs/ModernProductSp
 const fetchProductDetails = async (productId: string | undefined): Promise<ApiResponse<Product>> => {
   if (!productId) throw new Error('Product ID is required');
   const res = await apiClient.get(`/products/${productId}`);
-  console.log(res.data);
+  // console.log(res.data);
   return res.data;
 };
 
@@ -43,7 +43,7 @@ const ProductDetailsPage: React.FC = () => {
   });
 
   const product = productData?.data || null;
-  console.log('Product Data:', product);
+  // console.log('Product Data:', product);
   const categoryId = product?.category?._id;
 
   const { data: relatedProductsData } = useQuery({
@@ -59,7 +59,7 @@ const ProductDetailsPage: React.FC = () => {
       if (selectedVariant >= 0 && product.variants && product.variants[selectedVariant]) {
         // Show variant images when a variant is selected
         const variant = product.variants[selectedVariant];
-        console.log('variant', variant);
+        //console.log('variant', variant);
         if (variant && variant.images && variant.images.length > 0) {
           setCurrentImages(variant.images);
         } else {

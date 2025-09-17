@@ -19,7 +19,7 @@ const CategoriesGrid: React.FC<CategoriesGridProps> = ({ categories, title = "Ca
   const navigate = useNavigate();
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  console.log(categories);
+  // console.log(categories);
 
   const handleCategoryClick = (categoryId: string) => {
     navigate(`/category/${categoryId}`);
