@@ -23,7 +23,7 @@ const CartModal: React.FC = () => {
 
   const handleEnquirySubmit = async (enquiry: Enquiry) => {
     // This will be handled by the parent component
-    // console.log('Enquiry submitted from cart:', enquiry);
+    console.log('Enquiry submitted from cart:', enquiry);
     setIsEnquiryFormOpen(false);
     setSelectedCartItem(null);
   };
