@@ -76,6 +76,8 @@ const InstagramReels: React.FC<InstagramReelsProps> = ({ reels, title = "Feature
   const touchStartX = useRef<number>(0);
   const [visibleReels, setVisibleReels] = useState<Set<string>>(new Set());
 
+  console.log(visibleReels)
+
   // Memoized optimized URLs
   const optimizedReels = useMemo(() => 
     reels.map(reel => ({
@@ -231,7 +233,7 @@ const InstagramReels: React.FC<InstagramReelsProps> = ({ reels, title = "Feature
   useEffect(() => {
     if (isModalOpen && modalVideoRef.current && activeIndex !== null) {
       const video = modalVideoRef.current;
-      const reel = optimizedReels[activeIndex];
+      // const reel = optimizedReels[activeIndex];
       
       video.currentTime = 0;
       video.muted = isMuted;
