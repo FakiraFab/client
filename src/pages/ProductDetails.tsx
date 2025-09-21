@@ -254,11 +254,11 @@ const ProductDetailsPage: React.FC = () => {
 
     {/* Main Image - Right Side */}
     <div className="flex-1">
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+      <div className="overflow-hidden">
         <img
           src={currentImages[selectedImage] || product.imageUrl || 'https://via.placeholder.com/400'}
           alt={product.name}
-          className="w-full h-full object-contain"
+          className="w-full h-full object-cover"
         />
       </div>
     </div>
@@ -266,11 +266,11 @@ const ProductDetailsPage: React.FC = () => {
 
   {/* Mobile Layout - Autoplay Carousel */}
   <div className="lg:hidden">
-    <div className="relative bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+    <div className="relative  overflow-hidden">
       <img
         src={currentImages[selectedImage] || product.imageUrl || 'https://via.placeholder.com/400'}
         alt={product.name}
-        className="w-full h-80 object-contain"
+        className="w-full h-80 object-cover"
       />
       
       {/* Carousel Indicators */}

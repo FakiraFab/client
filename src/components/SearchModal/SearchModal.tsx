@@ -90,18 +90,18 @@ const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col">
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
       {/* Backdrop */}
       <div 
         className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
         onClick={onClose}
       />
       
-      {/* Modal - Fixed positioning with proper responsive behavior */}
-      <div className="relative flex flex-col h-full">
-        {/* Mobile: Full screen, Desktop: Centered with max height */}
-        <div className="mx-auto w-full h-full flex flex-col
-                        md:max-w-6xl md:my-8 md:mx-4 md:h-auto md:max-h-[calc(100vh-4rem)]">
+      {/* Modal - Properly centered with responsive behavior */}
+      <div className="relative w-full h-full flex items-center justify-center p-0 md:p-4">
+        {/* Mobile: Full screen, Desktop: Centered with max dimensions */}
+        <div className="w-full h-full flex flex-col
+                        md:w-full md:max-w-6xl md:h-auto md:max-h-[calc(100vh-2rem)]">
           
           <div className="bg-white flex flex-col h-full 
                           rounded-none md:rounded-3xl md:shadow-2xl 

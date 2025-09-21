@@ -29,7 +29,7 @@ const WorkshopSection: React.FC<{ onRegisterClick: () => void }> = ({ onRegister
               <h2 className="text-5xl sm:text-6xl lg:text-7xl font-black text-gray-900 leading-none tracking-tight -mt-2">
                 FOR OUR
               </h2>
-              <h2 className="text-5xl sm:text-6xl lg:text-7xl font-black bg-gradient-to-r from-red-600 to-red-800 bg-clip-text text-transparent leading-none tracking-tight -mt-2">
+              <h2 className="text-5xl sm:text-6xl lg:text-7xl font-black bg-[#7F1416] bg-clip-text text-transparent leading-none tracking-tight -mt-2">
                 WORKSHOP
               </h2>
             </div>
@@ -61,10 +61,10 @@ const WorkshopSection: React.FC<{ onRegisterClick: () => void }> = ({ onRegister
             <div className="pt-6">
               <button
                 onClick={onRegisterClick}
-                className="group inline-flex items-center justify-center px-12 py-5 bg-red-700 hover:bg-red-800 text-white text-lg font-bold rounded-full transition-all duration-300 transform hover:scale-105 hover:shadow-2xl active:scale-95 relative overflow-hidden"
+                className="group inline-flex items-center justify-center px-12 py-5 bg-black hover:bg-[#7F1416] text-white text-lg font-bold  transition-all duration-300 transform hover:scale-105 hover:shadow-2xl active:scale-95 relative overflow-hidden"
               >
                 <span className="relative z-10">Register Now</span>
-                <div className="absolute inset-0 bg-gradient-to-r from-red-600 to-red-800 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <div className="absolute inset-0  opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                 
                 {/* Arrow Icon */}
                 <svg 
@@ -97,7 +97,7 @@ const WorkshopSection: React.FC<{ onRegisterClick: () => void }> = ({ onRegister
           <div className="w-full lg:w-1/2 order-1 lg:order-2">
             <div className="relative group">
               {/* Main Image */}
-              <div className="relative overflow-hidden rounded-2xl shadow-2xl transform group-hover:scale-105 transition-transform duration-500">
+              <div className="relative overflow-hidden  shadow-2xl transform group-hover:scale-105 transition-transform duration-500">
                 <img
                   src="https://res.cloudinary.com/dhkaucebl/image/upload/v1754541548/WhatsApp_Image_2024-07-27_at_13.05.06_b780f152_1_lpcth9.png"
                   alt="Block printing workshop with artisans"

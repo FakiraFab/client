@@ -292,7 +292,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
             <button
               onClick={handleAddToCart}
               disabled={isOutOfStock}
-              className="w-10 h-10 bg-[#7F1416] text-white rounded-full shadow-lg flex items-center justify-center disabled:bg-gray-400 disabled:cursor-not-allowed transform hover:scale-110 transition-transform"
+              className="w-10 h-10 bg-[#7F1416] text-white  shadow-lg flex items-center justify-center disabled:bg-gray-400 disabled:cursor-not-allowed transform hover:scale-110 transition-transform"
             >
               <ShoppingCart className="w-5 h-5" />
             </button>
