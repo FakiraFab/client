@@ -13,7 +13,7 @@ import type { Category, Product, Reel, Banner, ApiResponse } from '../types';
 import { fetchActiveReels } from '../api/products';
 import { fetchActiveBanners } from '../api/banners';
 import WorkshopSection from '../components/WorkshopSection/WorkshopSection';
-import { FloralPatternSection, TouchFeelCreateHero } from '../components/StaticSections';
+import { IndigoPatternSection, TouchFeelCreateHero } from '../components/StaticSections';
 import { 
   HeroSkeleton, 
   ReelsGridSkeleton, 
@@ -40,21 +40,21 @@ const sampleImages = [
 
     {
         _id: '1',
-        image: 'https://vrajbhoomi.in/cdn/shop/files/tulya-banne-3.jpg?v=1755868629&width=2000',
+        image: 'https://res.cloudinary.com/dtst7rqhw/image/upload/v1758265781/6226250966609545669_fyv5xp.jpg',
         title: 'Sample Image 1',
         ctaText: 'Shop Now',
         ctaLink: '/categories',
     },
     {
         _id: '2',
-        image: 'https://vrajbhoomi.in/cdn/shop/files/tulya-banner-1_eb4b649d-46eb-46a4-8cfe-b5d0e0e6748a.jpg?v=1755868608&width=2000',
+        image: 'https://res.cloudinary.com/dtst7rqhw/image/upload/v1758265776/6226250966609545684_jfzhvs.jpg',
         title: 'Sample Image 2',
         ctaText: 'Explore',
         ctaLink: '/categories',
     },
     {
         _id: '3',
-        image: 'https://vrajbhoomi.in/cdn/shop/files/tulya-banner-2_98501ee1-473c-4f42-a0dc-3ca07e01679b.jpg?v=1755868534&width=2000',
+        image: 'https://res.cloudinary.com/dtst7rqhw/image/upload/v1758265764/6226250966609545687_r7bw2p.jpg',
         title: 'Sample Image 3',
         ctaText: 'Learn More',
         ctaLink: '/categories',
@@ -131,7 +131,7 @@ const HomePage: React.FC = () => {
 
   // Find specific categories for dynamic data
   const fabricCategory = categoriesData.find(cat => 
-    cat.name.includes('dupattas') || 
+    cat.name.includes('Unstitch Fabrics') || 
     cat.name.toLowerCase().includes('textile')
   );
 //  console.log('Categories Data:', categoriesData);
@@ -334,7 +334,7 @@ const HomePage: React.FC = () => {
         <div className="py-16 bg-gray-50">
           <div className="container mx-auto px-4">
             <div className="text-center mb-8">
-              <h2 className="text-3xl font-bold text-gray-900">Fabric Collections</h2>
+              <h2 className="text-3xl font-bold text-gray-900">Unstich Fabric Collections</h2>
             </div>
             <ProductGridSkeleton count={4} />
           </div>
@@ -404,7 +404,7 @@ const HomePage: React.FC = () => {
 
       
       {/* Static Floral Pattern Section */}
-      <FloralPatternSection />
+      <IndigoPatternSection/>
 
       {/* Static Best Seller Section */}
       {/* <BestSellerSection /> */}
