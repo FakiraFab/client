@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ArrowRight, Heart, Leaf, Users, Award, Star, Globe, ChevronLeft, ChevronRight, VolumeX, Pause, Volume2, Play } from 'lucide-react';
-import { Link, Navigate } from 'react-router-dom';
+import { ArrowRight, Heart, Award, Star, ChevronLeft, ChevronRight, VolumeX, Pause, Volume2, Play } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const AboutUs: React.FC = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
