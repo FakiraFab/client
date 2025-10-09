@@ -1,6 +1,15 @@
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { ChevronLeft, ChevronRight, Play, Pause, X, Volume2, VolumeX, Loader2 } from 'lucide-react';
-import type { Reel } from '../../types';
+
+// Types
+interface Reel {
+  _id: string;
+  title: string;
+  description?: string;
+  videoUrl: string;
+  thumbnailUrl?: string;
+  price?: number;
+}
 
 interface InstagramReelsProps {
   reels: Reel[];
@@ -52,26 +61,6 @@ const optimizeThumbnailUrl = (videoUrl: string, options: { width?: number; heigh
   return `${parts[0]}/upload/${transformations}/${parts[1].replace(/\.[^.]+$/, '.jpg')}`;
 };
 
-// Low-res blurred preview loop
-const optimizePreviewUrl = (videoUrl: string) => {
-  if (!videoUrl.includes('cloudinary.com')) return videoUrl;
-
-  const parts = videoUrl.split('/upload/');
-  if (parts.length !== 2) return videoUrl;
-
-  const transformations = [
-    'w_150',
-    'h_200',
-    'c_fill',
-    'q_10',
-    'e_blur:200',
-    'f_auto',
-    'vc_auto'
-  ].join(',');
-
-  return `${parts[0]}/upload/${transformations}/${parts[1]}`;
-};
-
 // ---------------- Component ----------------
 const InstagramReels: React.FC<InstagramReelsProps> = ({ reels, title = 'Featured Reels' }) => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -106,8 +95,7 @@ const InstagramReels: React.FC<InstagramReelsProps> = ({ reels, title = 'Feature
           width: 1080,
           height: 1920,
           quality: 'auto:best'
-        }),
-        previewUrl: optimizePreviewUrl(reel.videoUrl)
+        })
       })),
     [reels]
   );
@@ -146,9 +134,9 @@ const InstagramReels: React.FC<InstagramReelsProps> = ({ reels, title = 'Feature
           previousVideo?.pause();
         }
 
-        // Swap preview → full video
+        // Load video if not already loaded
         const fullUrl = optimizedReels.find((r) => r._id === reelId)?.optimizedVideoUrl;
-        if (fullUrl && video.src !== fullUrl) {
+        if (fullUrl && !video.src) {
           video.src = fullUrl;
           video.load();
         }
@@ -164,13 +152,19 @@ const InstagramReels: React.FC<InstagramReelsProps> = ({ reels, title = 'Feature
       }
     } catch (error) {
       console.error('Video play failed:', error);
+      setLoadingVideos((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(reelId);
+        return newSet;
+      });
     }
   };
 
-  // Modal open
+  // Modal open - unmute by default in fullscreen
   const openModal = (index: number) => {
     setActiveIndex(index);
     setIsModalOpen(true);
+    setIsMuted(false); // Unmute when opening fullscreen
   };
 
   const toggleMute = () => setIsMuted((prev) => !prev);
@@ -223,18 +217,23 @@ const InstagramReels: React.FC<InstagramReelsProps> = ({ reels, title = 'Feature
               className="cursor-pointer flex-shrink-0 w-56 bg-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 overflow-hidden group"
             >
               <div className="relative h-96 overflow-hidden">
-                {/* Preview video (blurred) → swapped to full on play */}
+                {/* Static thumbnail - video loads only on click */}
+                <img
+                  src={reel.optimizedThumbnail}
+                  alt={reel.title}
+                  className="w-full h-full object-cover"
+                />
+                
+                {/* Hidden video element - loads only when played */}
                 <video
                   ref={(el) => {
                     if (el) videoRefs.current.set(reel._id, el);
                   }}
-                  src={reel.previewUrl}
-                  poster={reel.optimizedThumbnail}
-                  className="w-full h-full object-cover"
+                  className="hidden"
                   muted
                   loop
                   playsInline
-                  preload="auto"
+                  preload="none"
                   onLoadStart={() => handleVideoLoadStart(reel._id)}
                   onLoadedData={() => handleVideoLoad(reel._id)}
                 />

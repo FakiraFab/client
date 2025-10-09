@@ -6,6 +6,7 @@ import ScrollToTop from './components/ScrollTop/ScrollTop';
 import { CartProvider } from './context/CartContext';
 import { ToastProvider, useToast } from './context/ToastContext';
 import ToastContainer from './components/Toast/ToastContainer';
+import { Analytics } from '@vercel/analytics/react';
 
 const HomePage = lazy(() => import('./pages/HomePage'));
 const CategoryPage = lazy(() => import('./pages/CategoryPage'));
@@ -49,6 +50,7 @@ function App() {
       <CartProvider>
         <Router>
           <AppContent />
+          <Analytics />
         </Router>
       </CartProvider>
     </ToastProvider>
