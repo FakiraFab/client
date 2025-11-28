@@ -10,6 +10,8 @@ import { useToast } from '../context/ToastContext';
 import ProductInfoTabs from '../components/ProductInfoTabs/ProductInfoTabs';
 import KnowYourGarment from '../components/KnowYourGarment/KnowYourGarment';
 import ModernProductSpecs from '../components/ModernProductSpecs/ModernProductSpecs';
+import Seo from '../components/Seo/Seo';
+import JsonLd from '../components/Seo/JsonLd';
 
 const fetchProductDetails = async (productId: string | undefined): Promise<ApiResponse<Product>> => {
   if (!productId) throw new Error('Product ID is required');
@@ -198,6 +200,33 @@ const ProductDetailsPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {product && (
+        <>
+          <Seo
+            title={`${product.name} — Fakira FAB`}
+            description={product.description || product.fullDescription || `Buy ${product.name} at Fakira FAB`}
+            image={product.images?.[0] || product.imageUrl}
+            type="product"
+          />
+          <JsonLd
+            data={{
+              "@context": "https://schema.org",
+              "@type": "Product",
+              "name": product.name,
+              "image": product.images || [product.imageUrl],
+              "description": product.description || product.fullDescription,
+              "sku": product._id,
+              "offers": {
+                "@type": "Offer",
+                "priceCurrency": "INR",
+                "price": product.price?.toString() || '0',
+                "availability": product.quantity && product.quantity > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+                "url": typeof window !== 'undefined' ? window.location.href : ''
+              }
+            }}
+          />
+        </>
+      )}
       {/* Success/Error Toast */}
       {enquiryStatus && (
         <div className={`fixed top-4 right-4 p-4 rounded-md text-white ${enquiryStatus.success ? 'bg-green-600' : 'bg-red-600'}`}>

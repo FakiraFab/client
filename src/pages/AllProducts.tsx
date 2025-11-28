@@ -1,8 +1,11 @@
+
 import React, { useState } from 'react';
 import ProductCard from '../components/ProductCard';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import apiClient from '../api/client';
 import type { Product } from '../types';
+import Seo from '../components/Seo/Seo';
+import JsonLd from '../components/Seo/JsonLd';
 
 // Fetch all products with pagination
 const fetchAllProducts = async ({ 
@@ -84,8 +87,45 @@ const AllProducts: React.FC = () => {
     }
   }, [data?.pages, sortBy]);
 
+  // SEO values
+  const pageTitle = "All Products | Handmade Fabrics, Sarees, Dresses & Men's Wear | Fakira FAB";
+  const pageDesc = 'Discover authentic hand-block-printed sarees, unstitched fabrics, suit pieces, dupattas, bedsheets, and men’s clothing at Fakira Fab—premium quality, timeless designs, handcrafted with love.';
+  const canonicalUrl = 'https://www.fakirafab.com/all-products';
+  const ogImage = 'https://www.fakirafab.com/og-all-products.jpg';
+  const keywords = 'handmade fabrics, sarees, dress materials, women clothing, artisan, block print, Fakira FAB, premium textiles, accessories';
+
+  // JSON-LD schema for CollectionPage
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    "name": "All Products",
+    "description": pageDesc,
+    "url": canonicalUrl,
+    "image": ogImage,
+    "keywords": keywords,
+    "publisher": {
+      "@type": "Organization",
+      "name": "Fakira FAB",
+      "url": "https://www.fakirafab.com/",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://www.fakirafab.com/logo.png"
+      }
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
+      <Seo
+        title={pageTitle}
+        description={pageDesc}
+        url={canonicalUrl}
+        image={ogImage}
+        type="website"
+        keywords={keywords}
+        imageAlt="All products at Fakira FAB - Handmade Fabrics, Sarees, Dresses & More"
+      />
+      <JsonLd data={jsonLd} />
       {/* Hero Header Section */}
       <div className="relative h-64 sm:h-80 lg:h-96 overflow-hidden">
         {/* Background with decorative elements */}

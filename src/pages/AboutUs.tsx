@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ArrowRight, Heart, Award, Star, ChevronLeft, ChevronRight, VolumeX, Pause, Volume2, Play } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import Seo from '../components/Seo/Seo';
+import JsonLd from '../components/Seo/JsonLd';
 
 const AboutUs: React.FC = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -8,15 +10,6 @@ const AboutUs: React.FC = () => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [progress, setProgress] = useState(0);
-
-  
-
-  /*
-
-
-
-  */
-
 
   function generateCloudninaryUrl(publicId: string, width: number, height: number): string {  
     return `https://res.cloudinary.com/dtst7rqhw/image/upload/q_auto,f_auto,w_${width},h_${height},c_fill/${publicId}`;
@@ -121,6 +114,18 @@ const AboutUs: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-white">
+      <Seo
+        title="About Fakira FAB — Heritage Block-Printed Fabrics"
+        description="Learn about Fakira FAB's history, craftsmanship and artisans. We preserve traditional block printing and natural dye techniques to create authentic textiles."
+      />
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@type": "AboutPage",
+          "name": "About Fakira FAB",
+          "description": "Fakira FAB preserves traditional block printing and creates handcrafted textiles in India."
+        }}
+      />
       {/* Hero Section */}
       <section className="relative py-12 md:py-20 bg-gradient-to-br from-red-50 to-orange-50 overflow-hidden">
         <div className="container mx-auto px-4">
