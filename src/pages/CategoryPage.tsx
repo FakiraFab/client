@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import ProductCard from '../components/ProductCard';
@@ -5,6 +6,8 @@ import { useInfiniteQuery } from '@tanstack/react-query';
 import apiClient from '../api/client';
 import type { Product } from '../types';
 import FilterTabs from '../components/FilterTabs/FilterTabs';
+import Seo from '../components/Seo/Seo';
+import JsonLd from '../components/Seo/JsonLd';
 
 const fetchProductsByCategory = async ({
   pageParam = 1,
@@ -113,8 +116,65 @@ const CategoryPage: React.FC = () => {
   const categoryBannerImage = data?.pages[0]?.category?.categoryBannerImage || 
     "https://www.fabvoguestudio.com/cdn/shop/collections/co-fresh-designs.jpg?v=1742118562&width=1950";
 
+  // SEO values
+  const canonicalUrl = `https://www.fakirafab.com/category/${categoryId || ''}`;
+  const pageTitle = `${displayCategoryName} | Handmade ${displayCategoryName} Online | Fakira FAB`;
+  const pageDesc = displayDescription;
+  const ogImage = categoryBannerImage;
+  const keywords = `handmade ${displayCategoryName}, ${displayCategoryName} online, block print, artisan, women clothing, Fakira FAB, premium textiles`;
+
+  // JSON-LD schemas
+  const jsonLdSchemas = [
+    {
+      "@context": "https://schema.org",
+      "@type": "CollectionPage",
+      "name": displayCategoryName,
+      "description": pageDesc,
+      "url": canonicalUrl,
+      "image": ogImage,
+      "keywords": keywords,
+      "publisher": {
+        "@type": "Organization",
+        "name": "Fakira FAB",
+        "url": "https://www.fakirafab.com/",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://www.fakirafab.com/logo.png"
+        }
+      }
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://www.fakirafab.com/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": displayCategoryName,
+          "item": canonicalUrl
+        }
+      ]
+    }
+  ];
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
+      <Seo
+        title={pageTitle}
+        description={pageDesc}
+        url={canonicalUrl}
+        image={ogImage}
+        type="website"
+        keywords={keywords}
+        imageAlt={`Handmade ${displayCategoryName} at Fakira FAB`}
+      />
+      <JsonLd data={jsonLdSchemas} />
       {/* Hero Header Section */}
       <div className="relative h-64 sm:h-80 lg:h-96 overflow-hidden">
         {/* Category Background Image */}

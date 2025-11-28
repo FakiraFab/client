@@ -21,9 +21,12 @@ import {
   CategoriesGridSkeleton 
 } from '../components/SkeletonLoader';
 import AutoCarousel from '../components/AutoCarousel/AutoCarousel';
+import Seo from '../components/Seo/Seo';
+import JsonLd from '../components/Seo/JsonLd';
 import StaticCarousel from '../components/StaticSections/StaticComponent';
 import FeaturesSection from '../components/StaticSections/FeaturesSection';
 import Testimonials from '../components/Testimonials/Testimonial';
+import { AboutFakiraFab } from '../components/AboutFakiraFab';
 
 
 
@@ -266,6 +269,44 @@ const HomePage: React.FC = () => {
 
   return (
     <div className="min-h-screen mt-5 bg-white px-4 sm:px-6 md:px-8 lg:px-12">
+      <Seo
+        title="Fakira Fab | Premium Hand Block Printed Fabrics, Sarees & Men's Wear"
+        description="Discover authentic hand-block-printed sarees, unstitched fabrics, suit pieces, dupattas, bedsheets, and men's clothing at Fakira Fab—premium quality, timeless designs, handcrafted with love."
+        image={bannersData?.[0]?.imageDesktop || sampleImages[0].image}
+        imageAlt="Fakira Fab - Premium Hand Block Printed Fabrics & Sarees"
+        keywords="best place to buy hand-block-printed materials, hand-block-printed fabric manufacturers India, handblock printed saree online, hand-block-printed cotton dress material, block print dupatta online shopping, traditional Indian block print clothing"
+        url="https://www.fakirafab.com/"
+      />
+      <JsonLd
+        data={[
+          {
+            "@context": "https://schema.org",
+            "@type": "Organization",
+            "name": "Fakira FAB",
+            "url": "https://www.fakirafab.com",
+            "logo": "https://www.fakirafab.com/logo.png",
+            "description": "Discover authentic hand-block-printed sarees, unstitched fabrics, suit pieces, dupattas, bedsheets, and men's clothing at Fakira Fab—premium quality, timeless designs, handcrafted with love.",
+            "sameAs": [
+              "https://www.instagram.com/fakirafab",
+              "https://www.facebook.com/fakirafab"
+            ]
+          },
+          {
+            "@context": "https://schema.org",
+            "@type": "WebSite",
+            "name": "Fakira FAB",
+            "url": "https://www.fakirafab.com",
+            "potentialAction": {
+              "@type": "SearchAction",
+              "target": {
+                "@type": "EntryPoint",
+                "urlTemplate": "https://www.fakirafab.com/all-products?q={search_term_string}"
+              },
+              "query-input": "required name=search_term_string"
+            }
+          }
+        ]}
+      />
       {/* Carousel Section */}
       {bannersLoading ? (
         <div className="relative w-full h-[50vh] sm:h-[60vh] md:h-[80vh] lg:h-[90vh] overflow-hidden">
@@ -421,6 +462,9 @@ const HomePage: React.FC = () => {
       <div className='mt-12 mb-12 flex justify-center bg-gray-50'>
       <Testimonials/>
       </div>
+
+      {/* About Fakira Fab Section */}
+      <AboutFakiraFab />
 
       
 

@@ -5,8 +5,11 @@ import Footer from './components/Footer/Footer';
 import ScrollToTop from './components/ScrollTop/ScrollTop';
 import { CartProvider } from './context/CartContext';
 import { ToastProvider, useToast } from './context/ToastContext';
+import { HelmetProvider } from 'react-helmet-async';
 import ToastContainer from './components/Toast/ToastContainer';
 import { Analytics } from '@vercel/analytics/react';
+import { GAListener } from './components/GAListener';
+
 
 const HomePage = lazy(() => import('./pages/HomePage'));
 const CategoryPage = lazy(() => import('./pages/CategoryPage'));
@@ -22,6 +25,9 @@ function AppContent() {
   return (
     <>
       <ScrollToTop />
+      {/* Google Analytics 4 Listener for SPA page tracking */}
+      {/* Detects route changes and sends page_path to GA4 */}
+      <GAListener />
       <div className="min-h-screen flex flex-col bg-white">
         <Header />
         <main className="flex-grow">
@@ -46,14 +52,16 @@ function AppContent() {
 
 function App() {
   return (
-    <ToastProvider>
-      <CartProvider>
-        <Router>
-          <AppContent />
-          <Analytics />
-        </Router>
-      </CartProvider>
-    </ToastProvider>
+    <HelmetProvider>
+      <ToastProvider>
+        <CartProvider>
+          <Router>
+            <AppContent />
+            <Analytics />
+          </Router>
+        </CartProvider>
+      </ToastProvider>
+    </HelmetProvider>
   );
 }
 
