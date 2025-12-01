@@ -35,6 +35,7 @@ const ProductDetailsPage: React.FC = () => {
   const [isEnquiryFormOpen, setIsEnquiryFormOpen] = useState(false);
   const [enquiryStatus, setEnquiryStatus] = useState<{ success: boolean; message: string } | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSpecsDrawerOpen, setIsSpecsDrawerOpen] = useState(true); // Desktop drawer state
   const { addToCart } = useCart();
   const { showToast } = useToast();
 
@@ -471,8 +472,10 @@ const ProductDetailsPage: React.FC = () => {
           </div>
           </div>
 
-        {/* Product Description */}
-        <ModernProductSpecs product={product} getCurrentColor={getCurrentColor} />
+        {/* Product Description - Mobile only (inline) */}
+        <div className="block lg:hidden">
+          <ModernProductSpecs product={product} getCurrentColor={getCurrentColor} mode="inline" />
+        </div>
         
         {/* Product Info Tabs */}
         <div className="mt-12 ">
@@ -515,6 +518,32 @@ const ProductDetailsPage: React.FC = () => {
         unit={product.unit || 'meter'}
         onSubmit={handleEnquirySubmit}
       />
+
+      {/* Desktop Specs Drawer - Fixed right panel */}
+      {isSpecsDrawerOpen && (
+        <div className="hidden lg:block">
+          <ModernProductSpecs 
+            product={product} 
+            getCurrentColor={getCurrentColor} 
+            mode="drawer" 
+            onClose={() => setIsSpecsDrawerOpen(false)} 
+          />
+        </div>
+      )}
+
+      {/* Desktop Specs Drawer Toggle Button - shown when drawer is closed */}
+      {!isSpecsDrawerOpen && (
+        <button
+          onClick={() => setIsSpecsDrawerOpen(true)}
+          className="hidden lg:flex fixed top-20 right-6 z-50 items-center gap-2 bg-[#7F1416] text-white px-4 py-2 rounded-lg shadow-lg hover:bg-[#651012] transition-colors focus:outline-none focus:ring-2 focus:ring-red-500"
+          aria-label="Show product specifications"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <span className="text-sm font-medium">Specs</span>
+        </button>
+      )}
     </div>
   );
 };
