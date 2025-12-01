@@ -35,6 +35,7 @@ const ProductDetailsPage: React.FC = () => {
   const [isEnquiryFormOpen, setIsEnquiryFormOpen] = useState(false);
   const [enquiryStatus, setEnquiryStatus] = useState<{ success: boolean; message: string } | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSpecsDrawerOpen, setIsSpecsDrawerOpen] = useState(true); // Desktop drawer state
   const { addToCart } = useCart();
   const { showToast } = useToast();
 
@@ -471,8 +472,10 @@ const ProductDetailsPage: React.FC = () => {
           </div>
           </div>
 
-        {/* Product Description */}
-        <ModernProductSpecs product={product} getCurrentColor={getCurrentColor} />
+        {/* Product Description - Mobile only (inline) */}
+        <div className="block lg:hidden">
+          <ModernProductSpecs product={product} getCurrentColor={getCurrentColor} mode="inline" />
+        </div>
         
         {/* Product Info Tabs */}
         <div className="mt-12 ">
@@ -515,6 +518,18 @@ const ProductDetailsPage: React.FC = () => {
         unit={product.unit || 'meter'}
         onSubmit={handleEnquirySubmit}
       />
+
+      {/* Desktop Specs Drawer - Fixed right panel */}
+      {isSpecsDrawerOpen && (
+        <div className="hidden lg:block">
+          <ModernProductSpecs 
+            product={product} 
+            getCurrentColor={getCurrentColor} 
+            mode="drawer" 
+            onClose={() => setIsSpecsDrawerOpen(false)} 
+          />
+        </div>
+      )}
     </div>
   );
 };

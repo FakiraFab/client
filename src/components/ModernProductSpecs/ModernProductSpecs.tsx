@@ -1,14 +1,32 @@
-import React from 'react';
-import { Info, Package, Palette, Ruler, Shirt, Hash, Layers } from 'lucide-react';
+import React, { useEffect, useCallback } from 'react';
+import { Info, Package, Palette, Ruler, Shirt, Hash, Layers, X } from 'lucide-react';
+import type { Product } from '../../types';
 
 interface ModernProductSpecsProps {
-  product: any;
+  product: Product;
   getCurrentColor: () => string;
+  mode?: 'drawer' | 'inline';
+  onClose?: () => void;
 }
 
 type SpecKey = 'material' | 'color' | 'style' | 'length' | 'blousePiece' | 'designNo';
 
-const ModernProductSpecs: React.FC<ModernProductSpecsProps> = ({ product, getCurrentColor }) => {
+// Helper to normalize color strings for display
+const normalizeColor = (color: string | undefined): string => {
+  if (!color) return 'N/A';
+  // Capitalize first letter of each word
+  return color
+    .split(' ')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
+};
+
+const ModernProductSpecs: React.FC<ModernProductSpecsProps> = ({ 
+  product, 
+  getCurrentColor, 
+  mode = 'inline',
+  onClose 
+}) => {
   const specIcons: Record<SpecKey, React.JSX.Element> = {
     material: <Layers className="w-4 h-4" />,
     color: <Palette className="w-4 h-4" />,
@@ -19,23 +37,53 @@ const ModernProductSpecs: React.FC<ModernProductSpecsProps> = ({ product, getCur
   };
 
   const specifications: { key: SpecKey; label: string; value: string }[] = [
-    { key: 'material', label: 'Material', value: product.specifications?.material },
-    { key: 'color', label: 'Color', value: getCurrentColor() },
-    { key: 'style', label: 'Style', value: product.specifications?.style },
-    { key: 'length', label: 'Length', value: product.specifications?.length },
-    { key: 'blousePiece', label: 'Blouse Piece', value: product.specifications?.blousePiece },
-    { key: 'designNo', label: 'Design No', value: product.specifications?.designNo }
+    { key: 'material', label: 'Material', value: product?.specifications?.material || 'N/A' },
+    { key: 'color', label: 'Color', value: normalizeColor(getCurrentColor()) },
+    { key: 'style', label: 'Style', value: product?.specifications?.style || 'N/A' },
+    { key: 'length', label: 'Length', value: product?.specifications?.length || 'N/A' },
+    { key: 'blousePiece', label: 'Blouse Piece', value: product?.specifications?.blousePiece || 'N/A' },
+    { key: 'designNo', label: 'Design No', value: product?.specifications?.designNo || 'N/A' }
   ];
 
+  // Handle Escape key to close drawer
+  const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    if (e.key === 'Escape' && mode === 'drawer' && onClose) {
+      onClose();
+    }
+  }, [mode, onClose]);
+
+  useEffect(() => {
+    if (mode === 'drawer') {
+      document.addEventListener('keydown', handleKeyDown);
+      return () => document.removeEventListener('keydown', handleKeyDown);
+    }
+  }, [mode, handleKeyDown]);
+
+  // Drawer mode wrapper classes
+  const drawerClasses = mode === 'drawer' 
+    ? 'fixed top-16 right-6 z-50 h-[calc(100vh-4rem)] w-full max-w-md bg-white shadow-2xl rounded-xl overflow-auto p-6'
+    : 'mt-8 lg:mt-12 max-w-4xl mx-auto';
+
   return (
-    <div className="mt-8 lg:mt-12 max-w-4xl mx-auto">
+    <div className={drawerClasses} role={mode === 'drawer' ? 'dialog' : undefined} aria-modal={mode === 'drawer' ? 'true' : undefined} aria-label={mode === 'drawer' ? 'Product Specifications' : undefined}>
       {/* Header */}
       <div className="bg-white shadow-sm border border-gray-100 rounded-lg overflow-hidden">
         <div className="border-b border-gray-100">
           <div className="px-4 lg:px-6 py-3 lg:py-4 bg-gradient-to-r from-red-50 to-red-100">
-            <div className="flex items-center justify-center gap-2 text-[#7F1416] text-sm lg:text-base font-medium">
-              <Info className="w-4 h-4" />
-              Product Specifications
+            <div className="flex items-center justify-between gap-2 text-[#7F1416] text-sm lg:text-base font-medium">
+              <div className="flex items-center gap-2 flex-1 justify-center">
+                <Info className="w-4 h-4" />
+                Product Specifications
+              </div>
+              {mode === 'drawer' && onClose && (
+                <button
+                  onClick={onClose}
+                  className="p-2 text-[#7F1416] hover:bg-red-200 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-red-500"
+                  aria-label="Close specifications panel"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -81,7 +129,7 @@ const ModernProductSpecs: React.FC<ModernProductSpecsProps> = ({ product, getCur
                   <div className="text-sm opacity-90 text-[#7F1416]">Authentic</div>
                 </div>
                 <div className="text-center p-3 bg-white bg-opacity-20 rounded-xl backdrop-blur-sm">
-                  <div className="text-2xl font-bold text-[#7F1416]">{product.specifications?.length || '5.5m'}</div>
+                  <div className="text-2xl font-bold text-[#7F1416]">{product?.specifications?.length || '5.5m'}</div>
                   <div className="text-sm opacity-90 text-[#7F1416]">Length</div>
                 </div>
                 <div className="text-center p-3 bg-white bg-opacity-20 rounded-xl backdrop-blur-sm">
