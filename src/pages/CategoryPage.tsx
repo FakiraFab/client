@@ -10,6 +10,7 @@ import Seo from '../components/Seo/Seo';
 import JsonLd from '../components/Seo/JsonLd';
 import FilterDrawer, { type FilterState } from '../components/FilterDrawer';
 import { SlidersHorizontal } from 'lucide-react';
+import { AVAILABLE_COLORS, getActiveFilterCount } from '../utils/filterUtils';
 
 const fetchProductsByCategory = async ({
   pageParam = 1,
@@ -27,12 +28,9 @@ const fetchProductsByCategory = async ({
   };
 
   // Build query params from filters
-  let query = type === 'All' ? '' : `&subcategory=${type}`;
-  
-  // Add filter params if they exist
-  if (filters.subcategory) {
-    query += `&subcategory=${filters.subcategory}`;
-  }
+  // Use filters.subcategory if available, otherwise fall back to type
+  const subcategoryFilter = filters.subcategory || (type !== 'All' ? type : undefined);
+  let query = subcategoryFilter ? `&subcategory=${subcategoryFilter}` : '';
   if (filters.minPrice !== undefined) {
     query += `&minPrice=${filters.minPrice}`;
   }
@@ -153,22 +151,19 @@ const CategoryPage: React.FC = () => {
 
   // Sync sortBy with URL
   React.useEffect(() => {
-    const params = new URLSearchParams(searchParams);
+    const params = new URLSearchParams();
     if (sortBy !== 'Featured') {
       params.set('sort', sortBy);
-    } else {
-      params.delete('sort');
     }
     // Preserve existing filter params
     if (filters.subcategory) params.set('subcategory', filters.subcategory);
     if (filters.minPrice !== undefined) params.set('minPrice', filters.minPrice.toString());
     if (filters.maxPrice !== undefined) params.set('maxPrice', filters.maxPrice.toString());
     if (filters.colors && filters.colors.length > 0) {
-      params.delete('color');
       filters.colors.forEach(color => params.append('color', color));
     }
     setSearchParams(params, { replace: true });
-  }, [sortBy]);
+  }, [sortBy, filters, setSearchParams]);
 
   // Sort products based on selected sort option
   const sortedProducts = React.useMemo(() => {
@@ -345,14 +340,9 @@ const CategoryPage: React.FC = () => {
                 >
                   <SlidersHorizontal className="w-4 h-4" />
                   Filters
-                  {(filters.minPrice !== undefined || filters.maxPrice !== undefined || (filters.colors && filters.colors.length > 0) || filters.subcategory) && (
+                  {getActiveFilterCount(filters) > 0 && (
                     <span className="ml-1 px-1.5 py-0.5 text-xs font-semibold text-white bg-purple-600 rounded-full">
-                      {[
-                        filters.subcategory ? 1 : 0,
-                        filters.minPrice !== undefined ? 1 : 0,
-                        filters.maxPrice !== undefined ? 1 : 0,
-                        (filters.colors?.length || 0)
-                      ].reduce((a, b) => a + b, 0)}
+                      {getActiveFilterCount(filters)}
                     </span>
                   )}
                 </button>
@@ -501,7 +491,7 @@ const CategoryPage: React.FC = () => {
         initialFilters={filters}
         availableFilters={{
           subcategories: data?.pages[0]?.filters?.subCategories || [],
-          colors: ['Red', 'Blue', 'Green', 'Yellow', 'Black', 'White', 'Pink', 'Purple', 'Orange', 'Brown'],
+          colors: AVAILABLE_COLORS,
         }}
       />
     </div>

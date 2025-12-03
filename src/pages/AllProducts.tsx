@@ -9,6 +9,7 @@ import Seo from '../components/Seo/Seo';
 import JsonLd from '../components/Seo/JsonLd';
 import FilterDrawer, { type FilterState } from '../components/FilterDrawer';
 import { SlidersHorizontal } from 'lucide-react';
+import { AVAILABLE_COLORS, getActiveFilterCount } from '../utils/filterUtils';
 
 // Fetch all products with pagination
 const fetchAllProducts = async ({ 
@@ -45,7 +46,7 @@ const fetchAllProducts = async ({
       });
     });
   }
-  if (sortBy && sortBy !== 'featured') {
+  if (sortBy && sortBy !== 'Featured') {
     query += `&sort=${sortBy}`;
   }
 
@@ -55,7 +56,7 @@ const fetchAllProducts = async ({
 
 const AllProducts: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const [sortBy, setSortBy] = useState<string>(searchParams.get('sort') || 'featured');
+  const [sortBy, setSortBy] = useState<string>(searchParams.get('sort') || 'Featured');
   const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
   const [isFiltering, setIsFiltering] = useState<boolean>(false);
   const [filters, setFilters] = useState<FilterState>({
@@ -119,7 +120,7 @@ const AllProducts: React.FC = () => {
     if (newFilters.colors && newFilters.colors.length > 0) {
       newFilters.colors.forEach(color => params.append('color', color));
     }
-    if (sortBy !== 'featured') params.set('sort', sortBy);
+    if (sortBy !== 'Featured') params.set('sort', sortBy);
     
     setSearchParams(params);
     setTimeout(() => setIsFiltering(false), 500);
@@ -135,22 +136,19 @@ const AllProducts: React.FC = () => {
 
   // Sync sortBy with URL
   React.useEffect(() => {
-    const params = new URLSearchParams(searchParams);
-    if (sortBy !== 'featured') {
+    const params = new URLSearchParams();
+    if (sortBy !== 'Featured') {
       params.set('sort', sortBy);
-    } else {
-      params.delete('sort');
     }
     // Preserve existing filter params
     if (filters.subcategory) params.set('subcategory', filters.subcategory);
     if (filters.minPrice !== undefined) params.set('minPrice', filters.minPrice.toString());
     if (filters.maxPrice !== undefined) params.set('maxPrice', filters.maxPrice.toString());
     if (filters.colors && filters.colors.length > 0) {
-      params.delete('color');
       filters.colors.forEach(color => params.append('color', color));
     }
     setSearchParams(params, { replace: true });
-  }, [sortBy]);
+  }, [sortBy, filters, setSearchParams]);
 
   // Sort products based on selected option
   const sortedProducts = React.useMemo(() => {
@@ -249,14 +247,9 @@ const AllProducts: React.FC = () => {
               >
                 <SlidersHorizontal className="w-4 h-4" />
                 Filters
-                {(filters.minPrice !== undefined || filters.maxPrice !== undefined || (filters.colors && filters.colors.length > 0) || filters.subcategory) && (
+                {getActiveFilterCount(filters) > 0 && (
                   <span className="ml-1 px-1.5 py-0.5 text-xs font-semibold text-white bg-purple-600 rounded-full">
-                    {[
-                      filters.subcategory ? 1 : 0,
-                      filters.minPrice !== undefined ? 1 : 0,
-                      filters.maxPrice !== undefined ? 1 : 0,
-                      (filters.colors?.length || 0)
-                    ].reduce((a, b) => a + b, 0)}
+                    {getActiveFilterCount(filters)}
                   </span>
                 )}
               </button>
@@ -387,7 +380,7 @@ const AllProducts: React.FC = () => {
         onClear={handleClearFilters}
         initialFilters={filters}
         availableFilters={{
-          colors: ['Red', 'Blue', 'Green', 'Yellow', 'Black', 'White', 'Pink', 'Purple', 'Orange', 'Brown'],
+          colors: AVAILABLE_COLORS,
         }}
       />
 
