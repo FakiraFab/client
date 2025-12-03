@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import ProductCard from '../components/ProductCard';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import apiClient from '../api/client';
@@ -8,15 +8,17 @@ import type { Product } from '../types';
 import FilterTabs from '../components/FilterTabs/FilterTabs';
 import Seo from '../components/Seo/Seo';
 import JsonLd from '../components/Seo/JsonLd';
+import FilterDrawer, { type FilterState } from '../components/FilterDrawer';
+import { SlidersHorizontal } from 'lucide-react';
 
 const fetchProductsByCategory = async ({
   pageParam = 1,
   queryKey,
 }: {
   pageParam?: number;
-  queryKey: (string | undefined)[];
+  queryKey: (string | undefined | FilterState)[];
 }) => {
-  const [, categoryId, type] = queryKey as [string, string | undefined, string];
+  const [, categoryId, type, filters, sortBy] = queryKey as [string, string | undefined, string, FilterState, string];
   if (!categoryId) return { 
     success: true, 
     data: [], 
@@ -24,17 +26,53 @@ const fetchProductsByCategory = async ({
     pagination: { total: 0, page: 1, pages: 1 } 
   };
 
-  const query = type === 'All' ? '' : `&subcategory=${type}`;
+  // Build query params from filters
+  let query = type === 'All' ? '' : `&subcategory=${type}`;
+  
+  // Add filter params if they exist
+  if (filters.subcategory) {
+    query += `&subcategory=${filters.subcategory}`;
+  }
+  if (filters.minPrice !== undefined) {
+    query += `&minPrice=${filters.minPrice}`;
+  }
+  if (filters.maxPrice !== undefined) {
+    query += `&maxPrice=${filters.maxPrice}`;
+  }
+  if (filters.colors && filters.colors.length > 0) {
+    filters.colors.forEach(color => {
+      query += `&color=${color}`;
+    });
+  }
+  if (filters.attributes) {
+    Object.entries(filters.attributes).forEach(([attrName, values]) => {
+      values.forEach(value => {
+        query += `&${attrName}=${value}`;
+      });
+    });
+  }
+  if (sortBy && sortBy !== 'Featured') {
+    query += `&sort=${sortBy}`;
+  }
+
   const res = await apiClient.get(`/products?category=${categoryId}${query}&page=${pageParam}&limit=12`);
   return res.data;
 };
 
 const CategoryPage: React.FC = () => {
   const { categoryId } = useParams<{ categoryId: string }>();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [selectedType, setSelectedType] = useState<string>('All');
-  const [sortBy, setSortBy] = useState<string>('Featured');
+  const [sortBy, setSortBy] = useState<string>(searchParams.get('sort') || 'Featured');
   const [imageError, setImageError] = useState<boolean>(false);
   const [isFiltering, setIsFiltering] = useState<boolean>(false);
+  const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
+  const [filters, setFilters] = useState<FilterState>({
+    subcategory: searchParams.get('subcategory') || undefined,
+    minPrice: searchParams.get('minPrice') ? parseFloat(searchParams.get('minPrice')!) : undefined,
+    maxPrice: searchParams.get('maxPrice') ? parseFloat(searchParams.get('maxPrice')!) : undefined,
+    colors: searchParams.getAll('color').length > 0 ? searchParams.getAll('color') : undefined,
+  });
 
   const {
     data,
@@ -44,7 +82,7 @@ const CategoryPage: React.FC = () => {
     isLoading,
     error
   } = useInfiniteQuery({
-    queryKey: ['products', categoryId, selectedType],
+    queryKey: ['products', categoryId, selectedType, filters, sortBy],
     queryFn: fetchProductsByCategory,
     getNextPageParam: (lastPage) => {
       if (!lastPage.pagination) return undefined;
@@ -85,6 +123,52 @@ const CategoryPage: React.FC = () => {
     // Reset filtering state after a short delay to show loading
     setTimeout(() => setIsFiltering(false), 500);
   };
+
+  // Handle drawer filter apply
+  const handleApplyFilters = (newFilters: FilterState) => {
+    setIsFiltering(true);
+    setFilters(newFilters);
+    
+    // Update URL params
+    const params = new URLSearchParams();
+    if (newFilters.subcategory) params.set('subcategory', newFilters.subcategory);
+    if (newFilters.minPrice !== undefined) params.set('minPrice', newFilters.minPrice.toString());
+    if (newFilters.maxPrice !== undefined) params.set('maxPrice', newFilters.maxPrice.toString());
+    if (newFilters.colors && newFilters.colors.length > 0) {
+      newFilters.colors.forEach(color => params.append('color', color));
+    }
+    if (sortBy !== 'Featured') params.set('sort', sortBy);
+    
+    setSearchParams(params);
+    setTimeout(() => setIsFiltering(false), 500);
+  };
+
+  // Handle clear filters
+  const handleClearFilters = () => {
+    setIsFiltering(true);
+    setFilters({});
+    setSearchParams({});
+    setTimeout(() => setIsFiltering(false), 500);
+  };
+
+  // Sync sortBy with URL
+  React.useEffect(() => {
+    const params = new URLSearchParams(searchParams);
+    if (sortBy !== 'Featured') {
+      params.set('sort', sortBy);
+    } else {
+      params.delete('sort');
+    }
+    // Preserve existing filter params
+    if (filters.subcategory) params.set('subcategory', filters.subcategory);
+    if (filters.minPrice !== undefined) params.set('minPrice', filters.minPrice.toString());
+    if (filters.maxPrice !== undefined) params.set('maxPrice', filters.maxPrice.toString());
+    if (filters.colors && filters.colors.length > 0) {
+      params.delete('color');
+      filters.colors.forEach(color => params.append('color', color));
+    }
+    setSearchParams(params, { replace: true });
+  }, [sortBy]);
 
   // Sort products based on selected sort option
   const sortedProducts = React.useMemo(() => {
@@ -253,16 +337,35 @@ const CategoryPage: React.FC = () => {
         {/* Results Summary */}
         {!isLoading && !isFiltering && sortedProducts && sortedProducts.length > 0 && (
           <div className="mb-8">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-              <p className="text-gray-600 text-sm sm:text-base mb-4 sm:mb-0">
-                Showing <span className="font-semibold text-gray-900">{sortedProducts.length}</span> products
-                {selectedType !== 'All' && (
-                  <span className="ml-1">in <span className="font-semibold text-gray-900">{selectedType}</span></span>
-                )}
-                {sortBy !== 'Featured' && (
-                  <span className="ml-1">sorted by <span className="font-semibold text-gray-900">{sortBy}</span></span>
-                )}
-              </p>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setIsDrawerOpen(true)}
+                  className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-colors duration-200"
+                >
+                  <SlidersHorizontal className="w-4 h-4" />
+                  Filters
+                  {(filters.minPrice !== undefined || filters.maxPrice !== undefined || (filters.colors && filters.colors.length > 0) || filters.subcategory) && (
+                    <span className="ml-1 px-1.5 py-0.5 text-xs font-semibold text-white bg-purple-600 rounded-full">
+                      {[
+                        filters.subcategory ? 1 : 0,
+                        filters.minPrice !== undefined ? 1 : 0,
+                        filters.maxPrice !== undefined ? 1 : 0,
+                        (filters.colors?.length || 0)
+                      ].reduce((a, b) => a + b, 0)}
+                    </span>
+                  )}
+                </button>
+                <p className="text-gray-600 text-sm sm:text-base">
+                  Showing <span className="font-semibold text-gray-900">{sortedProducts.length}</span> products
+                  {selectedType !== 'All' && (
+                    <span className="ml-1">in <span className="font-semibold text-gray-900">{selectedType}</span></span>
+                  )}
+                  {sortBy !== 'Featured' && (
+                    <span className="ml-1">sorted by <span className="font-semibold text-gray-900">{sortBy}</span></span>
+                  )}
+                </p>
+              </div>
               
               {/* Sort Options */}
               <div className="flex items-center space-x-4">
@@ -388,6 +491,19 @@ const CategoryPage: React.FC = () => {
           }
         }
       `}</style>
+
+      {/* Filter Drawer */}
+      <FilterDrawer
+        isOpen={isDrawerOpen}
+        onClose={() => setIsDrawerOpen(false)}
+        onApply={handleApplyFilters}
+        onClear={handleClearFilters}
+        initialFilters={filters}
+        availableFilters={{
+          subcategories: data?.pages[0]?.filters?.subCategories || [],
+          colors: ['Red', 'Blue', 'Green', 'Yellow', 'Black', 'White', 'Pink', 'Purple', 'Orange', 'Brown'],
+        }}
+      />
     </div>
   );
 };
