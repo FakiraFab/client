@@ -7,7 +7,7 @@ import type { Product, ApiResponse, Enquiry } from '../types';
 import EnquiryForm from '../../src/components/EnquiryForm/EnquiryForm';
 import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
-import ProductInfoTabs from '../components/ProductInfoTabs/ProductInfoTabs';
+// import ProductInfoTabs from '../components/ProductInfoTabs/ProductInfoTabs';
 import KnowYourGarment from '../components/KnowYourGarment/KnowYourGarment';
 import ModernProductSpecs from '../components/ModernProductSpecs/ModernProductSpecs';
 import Seo from '../components/Seo/Seo';
@@ -116,16 +116,16 @@ const ProductDetailsPage: React.FC = () => {
     return Math.round(currentPrice * 1.2);
   };
 
-  const getSavings = () => {
-    return getOriginalPrice() - getCurrentPrice();
-  };
+  // const getSavings = () => {
+  //   return getOriginalPrice() - getCurrentPrice();
+  // };
 
-  const getCurrentQuantity = () => {
-    if (selectedVariant >= 0 && product?.variants && product.variants[selectedVariant]) {
-      return product.variants[selectedVariant].quantity;
-    }
-    return product?.quantity || 0;
-  };
+  // const getCurrentQuantity = () => {
+  //   if (selectedVariant >= 0 && product?.variants && product.variants[selectedVariant]) {
+  //     return product.variants[selectedVariant].quantity;
+  //   }
+  //   return product?.quantity || 0;
+  // };
 
   const getCurrentColor = () => {
     if (selectedVariant >= 0 && product?.variants && product.variants[selectedVariant]) {
