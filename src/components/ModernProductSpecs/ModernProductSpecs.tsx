@@ -1,5 +1,5 @@
-import React from 'react';
-import { Info, Package, Palette, Ruler, Shirt, Hash, Layers } from 'lucide-react';
+import React, { useState } from 'react';
+import { ChevronDown, Palette, Ruler, Shirt, Hash, Layers, Package } from 'lucide-react';
 
 interface ModernProductSpecsProps {
   product: any;
@@ -8,7 +8,53 @@ interface ModernProductSpecsProps {
 
 type SpecKey = 'material' | 'color' | 'style' | 'length' | 'blousePiece' | 'designNo';
 
+const AccordionItem: React.FC<{
+  title: string;
+  children: React.ReactNode;
+  isOpen: boolean;
+  onToggle: () => void;
+  showChevron?: boolean;
+}> = ({ title, children, isOpen, onToggle, showChevron = true }) => (
+  <div className="border-b border-gray-200">
+    <button
+      onClick={onToggle}
+      className="w-full px-4 lg:px-6 py-4 flex items-center justify-between hover:bg-gray-100 hover:bg-opacity-5 transition-colors text-left"
+    >
+      <span className="font-medium text-gray-900 text-sm lg:text-base">{title}</span>
+      {showChevron && (
+        <ChevronDown
+          className={`w-5 h-5 text-[#7F1416] transition-transform duration-200 ${
+            isOpen ? 'rotate-180' : ''
+          }`}
+        />
+      )}
+    </button>
+    {isOpen && (
+      <div className="px-4 lg:px-6 py-4  bg-opacity-5 text-black-700 text-sm border-t border-gray-200">
+        {children}
+      </div>
+    )}
+  </div>
+);
+
 const ModernProductSpecs: React.FC<ModernProductSpecsProps> = ({ product, getCurrentColor }) => {
+  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
+    productDescription: false,
+    productSpecifications: false,
+    disclaimer: false,
+    shippingPolicy: false,
+    returnPolicy: false,
+    washCare: false,
+    reviews: false,
+  });
+
+  const toggleSection = (section: string) => {
+    setExpandedSections(prev => ({
+      ...prev,
+      [section]: !prev[section]
+    }));
+  };
+
   const specIcons: Record<SpecKey, React.JSX.Element> = {
     material: <Layers className="w-4 h-4" />,
     color: <Palette className="w-4 h-4" />,
@@ -27,92 +73,115 @@ const ModernProductSpecs: React.FC<ModernProductSpecsProps> = ({ product, getCur
     { key: 'designNo', label: 'Design No', value: product.specifications?.designNo }
   ];
 
+  const reviewCount = product.reviewCount || 525;
+
   return (
-    <div className="mt-8 lg:mt-12 max-w-4xl mx-auto">
-      {/* Header */}
-      <div className="bg-white shadow-sm border border-gray-100 rounded-lg overflow-hidden">
-        <div className="border-b border-gray-100">
-          <div className="px-4 lg:px-6 py-3 lg:py-4 bg-gradient-to-r from-red-50 to-red-100">
-            <div className="flex items-center justify-center gap-2 text-[#7F1416] text-sm lg:text-base font-medium">
-              <Info className="w-4 h-4" />
-              Product Specifications
-            </div>
+    <div className="mt-8 lg:mt-12 max-w-full">
+      <div className="bg-white  rounded-lg overflow-hidden">
+        {/* Material - Non-collapsible */}
+        <div className="px-4 lg:px-6 py-4   bg-opacity-5">
+          <div className="flex items-center justify-between">
+            <span className="text-base font-medium font-semibold text-[#7F1416]">Material:</span>
+            <span className="text-sm lg:text-base font-semibold text-[#7F1416]">
+              {product.specifications?.material || 'N/A'}
+            </span>
           </div>
         </div>
 
-        <div className="p-8">
-          <div className="space-y-6">
-            {/* Specifications Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {specifications.map((spec, index) => (
-                <div
-                  key={spec.key}
-                  className="group p-4 rounded-xl border border-gray-100 hover:border-red-200 hover:shadow-md transition-all duration-300 bg-gradient-to-r from-gray-50 to-white hover:from-red-50 hover:to-white"
-                  style={{ animationDelay: `${index * 100}ms` }}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="flex-shrink-0 p-2 rounded-lg bg-white shadow-sm group-hover:shadow-md transition-shadow">
-                      <div className="text-[#7F1416] group-hover:text-[#651012]">
-                        {specIcons[spec.key]}
-                      </div>
+        {/* Accordion Items */}
+        <div>
+          {/* Product Description */}
+          <AccordionItem
+            title="Product Description"
+            isOpen={expandedSections.productDescription}
+            onToggle={() => toggleSection('productDescription')}
+          >
+            <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
+              {product.fullDescription || product.description || 'No description available'}
+            </p>
+          </AccordionItem>
+
+          {/* Product Specifications */}
+          <AccordionItem
+            title="Product Specifications"
+            isOpen={expandedSections.productSpecifications}
+            onToggle={() => toggleSection('productSpecifications')}
+          >
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {specifications.map((spec) => (
+                spec.value && (
+                  <div key={spec.key} className="flex items-start gap-3 p-3 bg-white rounded-lg">
+                    <div className="flex-shrink-0 text-gray-600 mt-0.5">
+                      {specIcons[spec.key]}
                     </div>
-                    <div className="flex-grow">
-                      <div className="text-sm font-medium text-gray-600 mb-1">
+                    <div>
+                      <div className="text-xs font-medium text-gray-600 mb-0.5">
                         {spec.label}
                       </div>
-                      <div className="text-lg font-semibold text-gray-900">
+                      <div className="text-sm font-semibold text-gray-900">
                         {spec.value}
                       </div>
                     </div>
                   </div>
-                </div>
+                )
               ))}
             </div>
+          </AccordionItem>
 
-            {/* Quick Features */}
-            <div className="mt-8 p-6 bg-gradient-to-r from-[#7F1416] to-[#5D0F11] rounded-2xl text-white">
-              <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                <Package className="w-5 h-5" />
-                Key Highlights
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="text-center p-3 bg-white bg-opacity-20 rounded-xl backdrop-blur-sm">
-                  <div className="text-2xl text-[#7F1416] font-bold">100%</div>
-                  <div className="text-sm opacity-90 text-[#7F1416]">Authentic</div>
-                </div>
-                <div className="text-center p-3 bg-white bg-opacity-20 rounded-xl backdrop-blur-sm">
-                  <div className="text-2xl font-bold text-[#7F1416]">{product.specifications?.length || '5.5m'}</div>
-                  <div className="text-sm opacity-90 text-[#7F1416]">Length</div>
-                </div>
-                <div className="text-center p-3 bg-white bg-opacity-20 rounded-xl backdrop-blur-sm">
-                  <div className="text-2xl font-bold text-[#7F1416]">Premium</div>
-                  <div className="text-sm opacity-90 text-[#7F1416]">Quality</div>
-                </div>
-              </div>
+          {/* Disclaimer */}
+          <AccordionItem
+            title="Disclaimer"
+            isOpen={expandedSections.disclaimer}
+            onToggle={() => toggleSection('disclaimer')}
+          >
+            <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
+              {product.disclaimer || 'Slight irregularities, color variations, and smudges are natural signs of authentic handmade work. Actual colors may vary. Size may differ by 1–2 inches.'}
+            </p>
+          </AccordionItem>
+
+          {/* Shipping Policy */}
+          <AccordionItem
+            title="Shipping Policy"
+            isOpen={expandedSections.shippingPolicy}
+            onToggle={() => toggleSection('shippingPolicy')}
+          >
+            <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
+              {product.shippingPolicy || 'Ships in 2–4 working days. Delivery in 4–8 days. Tracking provided. Secure packaging.'}
+            </p>
+          </AccordionItem>
+
+          {/* Return Policy */}
+          <AccordionItem
+            title="Return Policy"
+            isOpen={expandedSections.returnPolicy}
+            onToggle={() => toggleSection('returnPolicy')}
+          >
+            <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
+              {product.returnPolicy || 'Accepted only for damaged, defective, or incorrect items with an unboxing video within 24 hours. No returns for minor variations. Used or washed items are not eligible.'}
+            </p>
+          </AccordionItem>
+
+          {/* Wash Care & Manufacturer Info */}
+          <AccordionItem
+            title="Wash Care and Manufacturer Info"
+            isOpen={expandedSections.washCare}
+            onToggle={() => toggleSection('washCare')}
+          >
+            <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
+              {product.washcare || 'Hand wash separately in cold water. Use mild detergent. Do not bleach. Dry in shade. Iron on low/medium heat. Avoid soaking during the first wash.'}
+            </p>
+          </AccordionItem>
+
+          {/* Reviews */}
+          <AccordionItem
+            title={`Reviews (${reviewCount})`}
+            isOpen={expandedSections.reviews}
+            onToggle={() => toggleSection('reviews')}
+          >
+            <div className="text-center py-8 text-gray-500">
+              Reviews section coming soon. Total reviews: {reviewCount}
             </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Bottom Trust Indicators */}
-      <div className="bg-gray-50 rounded-b-2xl border-t border-gray-100 px-8 py-6">
-        <div className="flex flex-wrap justify-center gap-8 text-sm text-gray-600">
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 bg-[#7F1416] rounded-full"></div>
-            <span>Authentic Product</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 bg-[#A91B1E] rounded-full"></div>
-            <span>Quality Assured</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 bg-[#D12126] rounded-full"></div>
-            <span>Handcrafted</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 bg-[#F02D33] rounded-full"></div>
-            <span>Traditional Design</span>
-          </div>
+          </AccordionItem>
         </div>
       </div>
     </div>

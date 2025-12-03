@@ -466,7 +466,7 @@ const EnquiryForm: React.FC<EnquiryFormProps> = ({
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Quantity (Meters) <span className="text-red-600">*</span>
+                      Quantity ({unit==="piece" ? "Pieces" : "Meters"}) <span className="text-red-600">*</span>
                     </label>
                     <div className="flex items-center border border-gray-300 rounded-lg overflow-hidden hover:border-gray-400 transition-colors">
                       <button
