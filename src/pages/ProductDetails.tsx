@@ -7,7 +7,7 @@ import type { Product, ApiResponse, Enquiry } from '../types';
 import EnquiryForm from '../../src/components/EnquiryForm/EnquiryForm';
 import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
-import ProductInfoTabs from '../components/ProductInfoTabs/ProductInfoTabs';
+// import ProductInfoTabs from '../components/ProductInfoTabs/ProductInfoTabs';
 import KnowYourGarment from '../components/KnowYourGarment/KnowYourGarment';
 import ModernProductSpecs from '../components/ModernProductSpecs/ModernProductSpecs';
 import Seo from '../components/Seo/Seo';
@@ -116,16 +116,16 @@ const ProductDetailsPage: React.FC = () => {
     return Math.round(currentPrice * 1.2);
   };
 
-  const getSavings = () => {
-    return getOriginalPrice() - getCurrentPrice();
-  };
+  // const getSavings = () => {
+  //   return getOriginalPrice() - getCurrentPrice();
+  // };
 
-  const getCurrentQuantity = () => {
-    if (selectedVariant >= 0 && product?.variants && product.variants[selectedVariant]) {
-      return product.variants[selectedVariant].quantity;
-    }
-    return product?.quantity || 0;
-  };
+  // const getCurrentQuantity = () => {
+  //   if (selectedVariant >= 0 && product?.variants && product.variants[selectedVariant]) {
+  //     return product.variants[selectedVariant].quantity;
+  //   }
+  //   return product?.quantity || 0;
+  // };
 
   const getCurrentColor = () => {
     if (selectedVariant >= 0 && product?.variants && product.variants[selectedVariant]) {
@@ -246,7 +246,7 @@ const ProductDetailsPage: React.FC = () => {
           <nav className="text-sm text-gray-600">
             <Link to="/" className="hover:text-red-600">Home</Link>
             <span className="mx-2">/</span>
-            <Link to={`/category/${product.category?.name ?? ''}`} className="hover:text-red-600">
+            <Link to={`/category/${product.category?.name ?? ''}`} className="hover:text-[#7F1416]">
               {product.category?.name ?? ''}
             </Link>
             <span className="mx-2">/</span>
@@ -257,136 +257,225 @@ const ProductDetailsPage: React.FC = () => {
 
       {/* Product Details */}
       <div className="container mx-auto px-4 lg:px-6 py-6 lg:py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
-          {/* Product Images */}
-  <div>
-  {/* Desktop Layout - Thumbnail Strip + Main Image */}
-  <div className="hidden lg:flex gap-4">
-    {/* Thumbnail Strip - Left Side */}
-    <div className="flex flex-col gap-3 w-20">
-      {currentImages.map((image, index) => (
-        <button
-          key={index}
-          onClick={() => setSelectedImage(index)}
-          className={`w-20 h-20 rounded-lg border-2 overflow-hidden flex-shrink-0 ${
-            selectedImage === index ? 'border-red-600' : 'border-gray-200'
-          }`}
-        >
-          <img
-            src={image || 'https://via.placeholder.com/80'}
-            alt={`${product.name} ${index + 1}`}
-            className="w-full h-full object-contain"
-          />
-        </button>
-      ))}
-    </div>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 lg:auto-cols-fr">
+          {/* Product Images - Column 1 */}
+          <div className="lg:col-span-6">
+            {/* Desktop Layout - Thumbnail Strip + Main Image */}
+            <div className="hidden lg:flex lg:flex-col lg:gap-4 lg:h-auto">
+              {/* Thumbnails and Images Container */}
+              <div className="flex gap-4 flex-1">
+                {/* Thumbnail Strip - Left Side */}
+                <div className="flex flex-col gap-3 w-24 flex-shrink-0">
+                  {currentImages.map((image, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setSelectedImage(index)}
+                      className={`w-24 h-24 rounded-lg border-2 overflow-hidden flex-shrink-0 ${
+                        selectedImage === index ? 'border-red-600' : 'border-gray-200'
+                      }`}
+                    >
+                      <img
+                        src={image || 'https://via.placeholder.com/96'}
+                        alt={`${product.name} ${index + 1}`}
+                        className="w-full h-full object-contain"
+                      />
+                    </button>
+                  ))}
+                </div>
 
-    {/* Main Image - Right Side */}
-    <div className="flex-1">
-      <div className="overflow-hidden">
-        <img
-          src={currentImages[selectedImage] || product.imageUrl || 'https://via.placeholder.com/400'}
-          alt={product.name}
-          className="w-full h-full object-cover"
-        />
-      </div>
-    </div>
-  </div>
+                {/* Main Image - Right Side */}
+                <div className="flex-1 flex flex-col gap-4">
+                  <div className="flex-1 rounded-xl overflow-hidden border border-gray-200 shadow-sm">
+                    <img
+                      src={currentImages[selectedImage] || product.imageUrl || 'https://via.placeholder.com/400'}
+                      alt={product.name}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
 
-  {/* Mobile Layout - Autoplay Carousel */}
-  <div className="lg:hidden">
-    <div className="relative  overflow-hidden">
-      <img
-        src={currentImages[selectedImage] || product.imageUrl || 'https://via.placeholder.com/400'}
-        alt={product.name}
-        className="w-full h-80 object-cover"
-      />
-      
-      {/* Carousel Indicators */}
-      {currentImages.length > 1 && (
-        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
-          {currentImages.map((_, index) => (
-            <button
-              key={index}
-              onClick={() => setSelectedImage(index)}
-              className={`w-2 h-2 rounded-full transition-colors ${
-                selectedImage === index ? 'bg-white' : 'bg-white/50'
-              }`}
-            />
-          ))}
-        </div>
-      )}
-
-      {/* Image Counter */}
-      {currentImages.length > 1 && (
-        <div className="absolute top-4 right-4 bg-black/60 text-white px-2 py-1 rounded-full text-xs">
-          {selectedImage + 1} / {currentImages.length}
-        </div>
-      )}
-    </div>
-
-    {/* Mobile Thumbnail Strip (Optional - for manual navigation) */}
-    {currentImages.length > 1 && (
-      <div className="flex space-x-2 mt-4 overflow-x-auto pb-2">
-        {currentImages.map((image, index) => (
-          <button
-            key={index}
-            onClick={() => setSelectedImage(index)}
-            className={`flex-shrink-0 w-16 h-16 rounded-lg border-2 overflow-hidden ${
-              selectedImage === index ? 'border-red-600' : 'border-gray-200'
-            }`}
-          >
-            <img
-              src={image || 'https://via.placeholder.com/64'}
-              alt={`${product.name} ${index + 1}`}
-              className="w-full h-full object-contain"
-            />
-          </button>
-        ))}
-      </div>
-    )}
-  </div>
-</div>         
-
-          {/* Product Info */}
-          <div className="space-y-6">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">{product.name}</h1>
-              <div className="flex items-center space-x-4">
-                <span className="text-3xl font-bold text-red-600">
-                  Rs. {getCurrentPrice().toLocaleString()}
-                </span>
-                <span className="text-gray-500 line-through">
-                  Rs. {getOriginalPrice().toLocaleString()}
-                </span>
+                  {/* Secondary Image - Only on desktop if available */}
+                  {currentImages[1] && (
+                    <div className="rounded-xl overflow-hidden border border-gray-200 shadow-sm hidden lg:block">
+                      <img
+                        src={currentImages[1]}
+                        alt={`${product.name} alternate`}
+                        className="w-full lg:h-[250px] object-cover"
+                      />
+                    </div>
+                  )}
+                </div>
               </div>
-              <div className="flex items-center justify-between mt-2">
-                <p className="text-sm text-gray-600">
-                  Quantity left: {getCurrentQuantity()} {product.unit || 'meters'}
-                </p>
-                <p className="text-sm font-medium text-green-600">
-                  Save ₹{getSavings().toLocaleString()}
-                </p>
-              </div>
-              <p className="text-sm text-red-600 mt-1 font-medium">Limited period offer</p>
             </div>
 
+            {/* Mobile Layout - Autoplay Carousel */}
+            <div className="lg:hidden">
+              <div className="relative overflow-hidden">
+                <img
+                  src={currentImages[selectedImage] || product.imageUrl || 'https://via.placeholder.com/400'}
+                  alt={product.name}
+                  className="w-full h-80 object-cover"
+                />
+                
+                {/* Carousel Indicators */}
+                {currentImages.length > 1 && (
+                  <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
+                    {currentImages.map((_, index) => (
+                      <button
+                        key={index}
+                        onClick={() => setSelectedImage(index)}
+                        className={`w-2 h-2 rounded-full transition-colors ${
+                          selectedImage === index ? 'bg-white' : 'bg-white/50'
+                        }`}
+                      />
+                    ))}
+                  </div>
+                )}
+
+                {/* Image Counter */}
+                {currentImages.length > 1 && (
+                  <div className="absolute top-4 right-4 bg-black/60 text-white px-2 py-1 rounded-full text-xs">
+                    {selectedImage + 1} / {currentImages.length}
+                  </div>
+                )}
+              </div>
+
+              {/* Mobile Thumbnail Strip */}
+              {currentImages.length > 1 && (
+                <div className="flex space-x-2 mt-4 overflow-x-auto pb-2">
+                  {currentImages.map((image, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setSelectedImage(index)}
+                      className={`flex-shrink-0 w-16 h-16 rounded-lg border-2 overflow-hidden ${
+                        selectedImage === index ? 'border-red-600' : 'border-gray-200'
+                      }`}
+                    >
+                      <img
+                        src={image || 'https://via.placeholder.com/64'}
+                        alt={`${product.name} ${index + 1}`}
+                        className="w-full h-full object-contain"
+                      />
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Product Info & Specs - Column 2 */}
+          <div className="lg:col-span-6 space-y-6">
+            {/* Product Title & Price */}
+            <div>
+              <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-1 leading-tight">{product.name}</h1>
+              
+              {/* Price Section */}
+              <div className="flex items-center space-x-3 mb-1">
+                <span className="text-2xl font-bold text-gray-900">
+                  Rs. {getCurrentPrice().toLocaleString()}
+                </span>
+                <span className="text-lg text-gray-500 line-through">
+                  Rs. {getOriginalPrice().toLocaleString()}
+                </span>
+                <span className="text-lg font-bold text-gray-900">
+                  {Math.round(((getOriginalPrice() - getCurrentPrice()) / getOriginalPrice()) * 100)}% OFF
+                </span>
+              </div>
+              
+              {/* Subtext with per-unit price */}
+              <p className="text-sm text-gray-600 mb-2">
+                (Rs. {Math.round(getCurrentPrice() / 1)} / {product.unit || 'meter'} Rs-{getOriginalPrice()})
+              </p>
+              
+              {/* Sale Tag */}
+              <div className="inline-block bg-gray-800 text-white px-3 py-1 rounded text-sm font-medium mb-4">
+                Black Friday Sale
+              </div>
+              
+              {/* Reviews & SKU Section */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <div className="flex text-red-700">
+                    {[...Array(5)].map((_, i) => (
+                      <span key={i} className="text-lg">★</span>
+                    ))}
+                  </div>
+                  <span className="text-sm text-gray-700">525 reviews</span>
+                </div>
+                <p className="text-sm text-gray-700 font-medium">SKU: #fakirafab{product.specifications?.designNo}</p>
+              </div>
+            </div>
+
+            {/* Feature Icons Section */}
+            <div className="flex items-center justify-start space-x-8">
+              {/* Artisan Made */}
+              <div className="flex flex-col items-center space-y-2">
+                <div className="w-16 h-16 bg-blue-900 rounded-full flex items-center justify-center">
+                  <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/>
+                  </svg>
+                </div>
+                <p className="text-xs text-center font-medium text-gray-900">Artisan<br/>Made</p>
+              </div>
+              
+              {/* Hand Block Printed */}
+              <div className="flex flex-col items-center space-y-2">
+                <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center">
+                  <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M7 14c-1.66 0-3 1.34-3 3 0 1.31.84 2.41 2 2.83V20c0 .55.45 1 1 1s1-.45 1-1v-.17c1.16-.42 2-1.52 2-2.83 0-1.66-1.34-3-3-3zm13.71-9.71L12 .29c-.39-.39-1.02-.39-1.41 0L.29 10.59c-.39.39-.39 1.02 0 1.41L11 22.71c.39.39 1.02.39 1.41 0L23.71 12c.39-.38.39-1.02 0-1.41zM5 16c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2z"/>
+                  </svg>
+                </div>
+                <p className="text-xs text-center font-medium text-gray-900">100%<br/>Hand Block<br/>Printed</p>
+              </div>
+              
+              {/* Cotton */}
+              <div className="flex flex-col items-center space-y-2">
+                <div className="w-16 h-16 bg-blue-900 rounded-full flex items-center justify-center">
+                  <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                  </svg>
+                </div>
+                <p className="text-xs text-center font-medium text-gray-900">Cotton</p>
+              </div>
+            </div>
+
+            {/* Meter Selection Section */}
+            <div>
+              <h3 className="text-base font-bold text-gray-900 mb-3">{product.unit === 'piece' ? 'Pieces' : 'Meters'}:</h3>
+              <div className="flex flex-wrap gap-3">
+                {(product.unit === 'piece' ? [1, 2, 5, 10] : [1, 2.5, 5, 10]).map((qty) => (
+                  <button
+                    key={qty}
+                    onClick={() => handleQuickQuantitySelect(qty)}
+                    className={`w-12 h-12 rounded-lg border-2 font-semibold text-sm flex items-center justify-center transition-all ${
+                      quantity === qty
+                        ? 'bg-[#7F1416] text-white border-[#7F1416]'
+                        : 'bg-white text-gray-900 border-gray-300 hover:border-[#7F1416]'
+                    }`}
+                  >
+                    {qty}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Available Colors Section */}
             {product.variants && product.variants.length > 0 && (
-              <div className="bg-white p-4 rounded-lg border border-gray-100 shadow-sm">
-                <h3 className="text-sm font-medium text-gray-900 mb-3">Color Options</h3>
+              <div>
+                <h3 className="text-sm font-bold text-gray-900 mb-3">Available Colors</h3>
                 <div className="flex flex-wrap gap-3">
                   {/* Default product option */}
                   <button
                     onClick={() => handleVariantSelect(-1)}
-                    className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                    className={`w-12 h-12 rounded-full flex items-center justify-center transition-all ${
                       selectedVariant === -1 
-                        ? 'ring-2 ring-offset-2 ring-red-600' 
-                        : 'ring-1 ring-gray-200'
+                        ? 'ring-3 ring-offset-2 ring-gray-900' 
+                        : 'ring-2 ring-gray-300'
                     }`}
                     style={{ backgroundColor: product.color?.toLowerCase() }}
+                    title={product.color}
                   >
                     {selectedVariant === -1 && (
-                      <span className="text-white text-xs">✓</span>
+                      <span className="text-white text-lg font-bold">✓</span>
                     )}
                   </button>
                   {/* Variant options */}
@@ -394,90 +483,75 @@ const ProductDetailsPage: React.FC = () => {
                     <button
                       key={index}
                       onClick={() => handleVariantSelect(index)}
-                      className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                      className={`w-12 h-12 rounded-full flex items-center justify-center transition-all ${
                         selectedVariant === index 
-                          ? 'ring-2 ring-offset-2 ring-red-600' 
-                          : 'ring-1 ring-gray-200'
+                          ? 'ring-3 ring-offset-2 ring-gray-900' 
+                          : 'ring-2 ring-gray-300'
                       }`}
                       style={{ backgroundColor: variant.color?.toLowerCase() }}
+                      title={variant.color}
                     >
                       {selectedVariant === index && (
-                        <span className="text-white text-xs">✓</span>
+                        <span className="text-white text-lg font-bold">✓</span>
                       )}
                     </button>
                   ))}
                 </div>
-                <p className="text-xs text-gray-600 mt-2">
-                  Selected: {getCurrentColor()}
-                </p>
               </div>
             )}
 
-            <div className="bg-white p-4 rounded-lg border border-gray-100 shadow-sm">
-              <h3 className="text-sm font-medium text-gray-900 mb-3">Quantity</h3>
-              <div className="flex items-center space-x-4 mb-3">
-                <div className="flex items-center border border-gray-200 rounded-lg overflow-hidden">
-                  <button
-                    onClick={() => handleQuantityChange(-1)}
-                    className="px-3 py-2 bg-gray-50 hover:bg-gray-100 text-gray-600"
-                  >
-                    -
-                  </button>
-                  <span className="px-4 py-2 border-x border-gray-200">{quantity}</span>
-                  <button
-                    onClick={() => handleQuantityChange(1)}
-                    className="px-3 py-2 bg-gray-50 hover:bg-gray-100 text-gray-600"
-                  >
-                    +
-                  </button>
-                </div>
+            {/* Quantity Section */}
+            <div>
+              <h3 className="text-base font-bold text-gray-900 mb-3">Quantity:</h3>
+              <div className="flex items-center border-2 border-gray-400 rounded-lg overflow-hidden w-fit">
+                <button
+                  onClick={() => handleQuantityChange(-1)}
+                  className="px-4 py-3 text-gray-600 hover:bg-gray-100 text-lg font-semibold"
+                >
+                  −
+                </button>
+                <span className="px-6 py-3 border-l-2 border-r-2 border-gray-400 text-lg font-semibold text-gray-900 min-w-16 text-center">{quantity}</span>
+                <button
+                  onClick={() => handleQuantityChange(1)}
+                  className="px-4 py-3 text-gray-600 hover:bg-gray-100 text-lg font-semibold"
+                >
+                  +
+                </button>
               </div>
-              <div className="flex flex-wrap gap-2">
-                {(product.unit === 'piece' ? [1, 2, 5, 10] : [1, 2.5, 5, 10]).map((qty) => (
-                  <button
-                    key={qty}
-                    onClick={() => handleQuickQuantitySelect(qty)}
-                    className={`px-3 py-1.5 rounded-full text-sm ${
-                      quantity === qty
-                        ? 'bg-red-50 text-red-600 border border-red-200'
-                        : 'bg-gray-50 text-gray-600 border border-gray-200 hover:bg-gray-100'
-                    }`}
-                  >
-                    {qty} {product.unit}
-                  </button>
-                ))}
-              </div>
-              <p className="text-xs text-gray-600 mt-2">
-                ≈ {getCurrentQuantity()} {product.unit}s in stock
-              </p>
             </div>
+            {/* Enquire Now Button */}
+            <button 
+              onClick={openEnquiryForm}
+              className="w-full bg-white border-2 border-gray-800 text-gray-800 py-2.5 rounded-lg font-bold text-sm hover:bg-[#7F1416] hover:text-white transition-colors"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? 'Submitting...' : 'ENQUIRE NOW'}
+            </button>
 
-            <div className="flex gap-3">
-              <button 
-                onClick={handleAddToCart}
-                className="flex-1 bg-gray-900 text-white py-2.5 rounded-lg font-medium text-sm hover:bg-gray-800 transition-colors"
-              >
-                Add to Cart
-              </button>
-              
-              <button 
-                onClick={openEnquiryForm}
-                className="flex-1 bg-red-600 text-white py-2.5 rounded-lg font-medium text-sm hover:bg-red-700 transition-colors"
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? 'Submitting...' : 'Enquire Now'}
-              </button>
+
+            {/* Add to Cart Button with Price */}
+            <button 
+              onClick={handleAddToCart}
+              className="w-full bg-[#7F1416] hover:bg-gray-900 text-white py-3 rounded-lg font-bold text-sm transition-colors flex items-center justify-center space-x-3"
+            >
+              <span>ADD TO CART</span>
+              <span>:</span>
+              <span>RS. {(getCurrentPrice() * quantity).toLocaleString()}</span>
+            </button>
+            
+            
+
+            {/* Product Specs - Below all price, quantity, and buttons */}
+            <div>
+              <ModernProductSpecs product={product} getCurrentColor={getCurrentColor} />
             </div>
           </div>
-          </div>
-
-        {/* Product Description */}
-        <ModernProductSpecs product={product} getCurrentColor={getCurrentColor} />
+        </div>
         
         {/* Product Info Tabs */}
-        <div className="mt-12 ">
+        {/* <div className="mt-12 ">
           <ProductInfoTabs productDescription={product.fullDescription || ''} />
-        </div>
+        </div> */}
 
         {/* Related Products */}
         <div className="mt-12">

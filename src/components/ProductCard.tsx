@@ -255,8 +255,8 @@ const ProductCard = ({ product }: ProductCardProps) => {
               </span>
             )}
             {isLowStock && !isOutOfStock && (
-              <span className="bg-gradient-to-r from-orange-400 to-amber-400 text-white text-xs font-medium px-2 py-1 rounded-full shadow-lg">
-                Low Stock
+              <span className="bg-[#7F1416] to-amber-400 text-white text-xs font-medium px-2 py-1 rounded-full shadow-lg">
+                Few Left!
               </span>
             )}
             {isOutOfStock && (

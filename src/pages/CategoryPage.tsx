@@ -6,6 +6,7 @@ import { useInfiniteQuery } from '@tanstack/react-query';
 import apiClient from '../api/client';
 import type { Product } from '../types';
 import FilterTabs from '../components/FilterTabs/FilterTabs';
+import { FaqSection } from '../components/StaticSections';
 import Seo from '../components/Seo/Seo';
 import JsonLd from '../components/Seo/JsonLd';
 
@@ -374,6 +375,8 @@ const CategoryPage: React.FC = () => {
             </div>
           </div>
         )}
+        {/* FAQ Section (end of category content) */}
+        <FaqSection />
       </div>
 
       <style>{`
