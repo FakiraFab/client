@@ -1,7 +1,6 @@
-
 import React, { useState } from 'react';
 import ProductCard from '../components/ProductCard';
-import { useInfiniteQuery } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import apiClient from '../api/client';
 import type { Product } from '../types';
@@ -10,72 +9,41 @@ import JsonLd from '../components/Seo/JsonLd';
 import { FaqSection } from '../components/StaticSections';
 import CircularImageFilter from '../components/CircularImageFilter';
 
-// Fetch all products with pagination
-const fetchAllProducts = async ({ 
-  pageParam = 1 
-}: { 
-  pageParam?: number 
-}) => {
+// Fetch new arrivals - products created in the last 2 weeks
+const fetchNewArrivals = async (): Promise<Product[]> => {
+  const twoWeeksAgo = new Date();
+  twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
+
   const res = await apiClient.get('/products', {
     params: {
+      createdAt: {
+        $gte: twoWeeksAgo.toISOString(),
+      },
       sort: '-createdAt',
-      page: pageParam,
-      limit: 12
-    }
+      limit: 50, // Fetch more products for a full page experience
+    },
   });
-  return res.data;
+  return res.data.data;
 };
 
-const AllProducts: React.FC = () => {
+const NewArrivals: React.FC = () => {
   const [sortBy, setSortBy] = useState<string>('featured');
   const navigate = useNavigate();
 
   const {
-    data,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
+    data: productsData = [] as Product[],
     isLoading,
     error
-  } = useInfiniteQuery({
-    queryKey: ['allProducts'],
-    queryFn: fetchAllProducts,
-    getNextPageParam: (lastPage) => {
-      if (!lastPage.pagination) return undefined;
-      return lastPage.pagination.page < lastPage.pagination.pages ? lastPage.pagination.page + 1 : undefined;
-    },
-    initialPageParam: 1,
+  } = useQuery({
+    queryKey: ['newArrivals'],
+    queryFn: fetchNewArrivals,
   });
-
-  // Intersection Observer for infinite scroll
-  const observerTarget = React.useRef<HTMLDivElement>(null);
-
-  React.useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
-          fetchNextPage();
-        }
-      },
-      { threshold: 0.1 }
-    );
-
-    if (observerTarget.current) {
-      observer.observe(observerTarget.current);
-    }
-
-    return () => {
-      if (observerTarget.current) {
-        observer.unobserve(observerTarget.current);
-      }
-    };
-  }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
 
   // Sort products based on selected option
   const sortedProducts = React.useMemo(() => {
-    if (!data?.pages) return [];
+    if (!productsData) return [];
     
-    const products = data.pages.flatMap(page => page.data);
+    const products = [...productsData];
     
     switch (sortBy) {
       case 'price-low':
@@ -89,20 +57,46 @@ const AllProducts: React.FC = () => {
       default:
         return products; // Featured - keep original order
     }
-  }, [data?.pages, sortBy]);
+  }, [productsData, sortBy]);
+
+  // Map products to ensure all required fields are present
+  const mappedProducts = sortedProducts.map((product: Product) => ({
+    _id: product._id,
+    name: product.name,
+    subcategory: product.subcategory,
+    category: product.category,
+    description: product.description,
+    price: product.price,
+    imageUrl: product.imageUrl || 'https://via.placeholder.com/800',
+    quantity: product.quantity || 0,
+    options: product.options,
+    createdAt: product.createdAt,
+    updatedAt: product.updatedAt,
+    __v: product.__v,
+    images: product.images,
+    variants: product.variants,
+    unit: product.unit,
+    specifications: product.specifications,
+    fullDescription: product.fullDescription,
+    material: product.material,
+    style: product.style,
+    length: product.length,
+    blousePiece: product.blousePiece,
+    designNo: product.designNo,
+  }));
 
   // SEO values
-  const pageTitle = "All Products | Handmade Fabrics, Sarees, Dresses & Men's Wear | Fakira FAB";
-  const pageDesc = 'Discover authentic hand-block-printed sarees, unstitched fabrics, suit pieces, dupattas, bedsheets, and men’s clothing at Fakira Fab—premium quality, timeless designs, handcrafted with love.';
-  const canonicalUrl = 'https://www.fakirafab.com/all-products';
-  const ogImage = 'https://www.fakirafab.com/og-all-products.jpg';
-  const keywords = 'handmade fabrics, sarees, dress materials, women clothing, artisan, block print, Fakira FAB, premium textiles, accessories';
+  const pageTitle = "New Arrivals | Latest Handmade Fabrics, Sarees & Designs | Fakira FAB";
+  const pageDesc = 'Explore our newest collection of hand-block-printed sarees, unstitched fabrics, suit pieces, and more. Discover the latest arrivals from Fakira Fab—fresh designs, premium quality, handcrafted with love.';
+  const canonicalUrl = 'https://www.fakirafab.com/new-arrivals';
+  const ogImage = 'https://www.fakirafab.com/og-new-arrivals.jpg';
+  const keywords = 'new arrivals, latest designs, handmade fabrics, new sarees, latest collections, block print, Fakira FAB, new products, fresh designs';
 
   // JSON-LD schema for CollectionPage
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "CollectionPage",
-    "name": "All Products",
+    "name": "New Arrivals",
     "description": pageDesc,
     "url": canonicalUrl,
     "image": ogImage,
@@ -127,19 +121,19 @@ const AllProducts: React.FC = () => {
         image={ogImage}
         type="website"
         keywords={keywords}
-        imageAlt="All products at Fakira FAB - Handmade Fabrics, Sarees, Dresses & More"
+        imageAlt="New Arrivals at Fakira FAB - Latest Handmade Fabrics & Sarees"
       />
       <JsonLd data={jsonLd} />
+      
       {/* Hero Header Section */}
       <div className="relative h-64 sm:h-80 lg:h-96 overflow-hidden">
-         
+        {/* Category Background Image */}
         <img 
-          // src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8ZmFicmljJTIwZGVzaWdufGVufDB8fDB8fHww&auto=format&fit=crop&w=1470&q=80" 
-          src="https://images.unsplash.com/photo-1755408007655-9ac329cfa145?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" 
+          src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8ZmFicmljJTIwZGVzaWdufGVufDB8fDB8fHww&auto=format&fit=crop&w=1470&q=80" 
           alt="New Arrivals Background" 
           className="absolute inset-0 w-full h-full object-cover object-center"
         />
-        
+
         {/* Overlay for text readability */}
         <div className="absolute inset-0 bg-black/40"></div>
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
@@ -147,10 +141,10 @@ const AllProducts: React.FC = () => {
         <div className="relative container mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-20">
           <div className="text-center">
             <h1 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold text-white mb-4 tracking-tight">
-              All Products
+              New Arrivals
             </h1>
             <p className="text-lg sm:text-xl text-gray-300 max-w-2xl mx-auto leading-relaxed">
-              Discover our complete collection of premium fabrics, sarees, dress materials, and more
+              Discover our latest collection of handcrafted fabrics, sarees, and designs
             </p>
             <div className="mt-8 flex justify-center">
               <div className="w-40 h-1 bg-white rounded-full"></div>
@@ -162,7 +156,7 @@ const AllProducts: React.FC = () => {
       {/* Circular Image Filter Section */}
       <CircularImageFilter
         categories={[
-           {
+          {
             name: "Sarees",
             img: "https://res.cloudinary.com/dhkaucebl/image/upload/w_400,h_400,c_fill,ar_1:1,g_auto,q_auto,f_auto/v1760011020/sp0kuh8ihnbdcnmnwlcz.jpg",
             value: "Sarees"
@@ -182,7 +176,11 @@ const AllProducts: React.FC = () => {
             img: "https://res.cloudinary.com/dhkaucebl/image/upload/w_400,h_400,c_fill,ar_1:1,g_auto,q_auto,f_auto/v1764936905/hjtuhrf6cayxlko41ap9.jpg",
             value: "Bed Sheets"
           },
-         
+        //   {
+        //     name: "All",
+        //     img: "https://images.unsplash.com/photo-1558769132-cb1aea42c838?w=400&h=400&fit=crop",
+        //     value: ""
+        //   },
         ]}
         onCategorySelect={(category) => {
           if (category.value) {
@@ -196,7 +194,7 @@ const AllProducts: React.FC = () => {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
             <p className="text-gray-600 text-sm sm:text-base mb-4 sm:mb-0">
-              Showing <span className="font-semibold text-gray-900">{sortedProducts.length}</span> products
+              Showing <span className="font-semibold text-gray-900">{mappedProducts.length}</span> new products
             </p>
             
             {/* Sort Options */}
@@ -248,7 +246,7 @@ const AllProducts: React.FC = () => {
               </div>
               <h3 className="text-xl font-semibold text-gray-900 mb-2">Something went wrong</h3>
               <p className="text-gray-600 mb-6">
-                {error instanceof Error ? error.message : 'Unable to load products. Please try again.'}
+                {error instanceof Error ? error.message : 'Unable to load new arrivals. Please try again.'}
               </p>
               <button 
                 onClick={() => window.location.reload()} 
@@ -261,7 +259,7 @@ const AllProducts: React.FC = () => {
         )}
 
         {/* Empty State */}
-        {!isLoading && !error && sortedProducts.length === 0 && (
+        {!isLoading && !error && mappedProducts.length === 0 && (
           <div className="text-center py-16 sm:py-20">
             <div className="max-w-md mx-auto">
               <div className="w-20 h-20 mx-auto mb-6 bg-gray-100 rounded-full flex items-center justify-center">
@@ -270,19 +268,19 @@ const AllProducts: React.FC = () => {
                 </svg>
               </div>
               <h3 className="text-xl sm:text-2xl font-semibold text-gray-900 mb-3">
-                No products found
+                No new arrivals yet
               </h3>
               <p className="text-gray-600 mb-6">
-                We couldn't find any products at the moment. Please check back later.
+                We don't have any new arrivals at the moment. Check back soon for fresh designs!
               </p>
             </div>
           </div>
         )}
 
         {/* Product Grid */}
-        {!isLoading && !error && sortedProducts.length > 0 && (
+        {!isLoading && !error && mappedProducts.length > 0 && (
           <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
-            {sortedProducts.map((product: Product, index: number) => (
+            {mappedProducts.map((product: Product, index: number) => (
               <div 
                 key={product._id} 
                 className="group transform transition-all duration-300 hover:scale-105 hover:z-10"
@@ -296,38 +294,11 @@ const AllProducts: React.FC = () => {
             ))}
           </div>
         )}
-
-        {/* Infinite Scroll Loading Indicator */}
-        {!error && (hasNextPage || isFetchingNextPage) && (
-          <div 
-            ref={observerTarget}
-            className="mt-8 sm:mt-12 text-center p-4"
-          >
-            <div className="inline-flex items-center gap-2 text-gray-600">
-              <div className="w-4 h-4 border-2 border-[#7F1416] border-t-transparent rounded-full animate-spin"></div>
-              <span>{isFetchingNextPage ? 'Loading more products...' : 'Load more products'}</span>
-            </div>
-          </div>
-        )}
       </div>
-      <FaqSection />
-
       
-
-      {/* <style jsx>{`
-        @keyframes fadeInUp {
-          from {
-            opacity: 0;
-            transform: translateY(30px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-      `}</style> */}
+      <FaqSection />
     </div>
   );
 };
 
-export default AllProducts;
+export default NewArrivals;

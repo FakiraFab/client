@@ -31,10 +31,10 @@ import { AboutFakiraFab } from '../components/AboutFakiraFab';
 
 
 const slides : string[] = [
-   "Fast Track Shipping",
-  "Free Shipping – Just Spend ₹2000 or More",
-  "Cash on Delivery Accepted", 
-  "Smooth Exchange Process"
+  "Fast Track Shipping",
+  "Smooth exchange process",
+  "We only accept online payments", 
+  "We deliver all over India"
 ]
 
 
@@ -46,21 +46,21 @@ const sampleImages = [
         image: 'https://res.cloudinary.com/dtst7rqhw/image/upload/v1758265781/6226250966609545669_fyv5xp.jpg',
         title: 'Sample Image 1',
         ctaText: 'Shop Now',
-        ctaLink: '/categories',
+        ctaLink: '/new-arrivals',
     },
     {
         _id: '2',
         image: 'https://res.cloudinary.com/dtst7rqhw/image/upload/v1758265776/6226250966609545684_jfzhvs.jpg',
         title: 'Sample Image 2',
         ctaText: 'Explore',
-        ctaLink: '/categories',
+        ctaLink: '/new-arrivals',
     },
     {
         _id: '3',
         image: 'https://res.cloudinary.com/dtst7rqhw/image/upload/v1758265764/6226250966609545687_r7bw2p.jpg',
         title: 'Sample Image 3',
         ctaText: 'Learn More',
-        ctaLink: '/categories',
+        ctaLink: '/workshops',
     },
    
   ];
@@ -320,9 +320,9 @@ const HomePage: React.FC = () => {
       {reelsLoading ? (
         <div className="py-16 bg-white">
           <div className="container mx-auto px-4">
-            <div className="flex items-center justify-between mb-8">
+            {/* <div className="flex items-center justify-between mb-8">
               <h2 className="text-3xl font-bold text-gray-900">Featured Reels</h2>
-            </div>
+            </div> */}
             <ReelsGridSkeleton />
           </div>
         </div>

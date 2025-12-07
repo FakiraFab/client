@@ -62,7 +62,7 @@ const optimizeThumbnailUrl = (videoUrl: string, options: { width?: number; heigh
 };
 
 // ---------------- Component ----------------
-const InstagramReels: React.FC<InstagramReelsProps> = ({ reels, title = 'Featured Reels' }) => {
+const InstagramReels: React.FC<InstagramReelsProps> = ({ reels /*,title = 'Featured Reels'*/ }) => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const videoRefs = useRef<Map<string, HTMLVideoElement>>(new Map());
 
@@ -197,7 +197,7 @@ const InstagramReels: React.FC<InstagramReelsProps> = ({ reels, title = 'Feature
     <section className="py-16">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between mb-8">
-          <h2 className="text-3xl font-bold text-gray-900">{title}</h2>
+          <h2 className="text-3xl font-bold text-gray-900"></h2>
           <div className="flex space-x-2">
             <button onClick={scrollLeft} className="p-2 rounded-full bg-gray-100 hover:bg-gray-200">
               <ChevronLeft className="h-5 w-5 text-gray-600" />

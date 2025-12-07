@@ -130,8 +130,8 @@ const sections: Section[] = [
         answer: (
           <>
             You can reach us through:<br />
-            WhatsApp: (Add your number)<br />
-            Email: (Add your email)<br />
+            WhatsApp: +91 9998042577<br />
+            Email: fakirafab2410@gmail.com<br />
             Website Contact Form
           </>
         )
@@ -148,7 +148,7 @@ const sections: Section[] = [
       {
         question: 'Do you have an offline store?',
         answer:
-          'We are primarily an online-first brand, but manufacturing takes place in Ahmedabad. For bulk and wholesale visits, appointments can be scheduled.'
+          'Yes, we have an offline store. You can visit us to explore our full handblock-printed collection in person'
       },
       {
         question: 'Can I visit your workshop?',

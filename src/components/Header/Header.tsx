@@ -40,7 +40,10 @@ const Header: React.FC = () => {
     { name: 'All Products', href: 'all-products' },
     { name: 'Categories', href: 'category' },
     { name: 'Workshops', href: 'workshops' },
-    { name: 'About Us', href: 'about' }
+    { name: 'About Us', href: 'about' },
+    { name: 'Our Policy', href: 'OurPolicy' },
+    { name: 'Blogs', href: 'blog' }
+
   ];
 
   const categories = [

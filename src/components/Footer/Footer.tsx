@@ -7,12 +7,14 @@ const Footer: React.FC = () => {
     'Sarees',
     'dupattas',
     'Bed Sheets',
+    'new-arrivals'
   ];
 
   const quickLinks = [
     'about',
-    'Our Policy',
-    'FAQ'
+    'OurPolicy',
+    'FAQ',
+    'Blog'
   ];
 
   return (
@@ -46,7 +48,7 @@ const Footer: React.FC = () => {
                       href="mailto:fakirafab@gmail.com" 
                       className="hover:text-red-200 transition-colors duration-200 text-sm break-all"
                     >
-                      fakirafab@gmail.com
+                      fakirafab2410@gmail.com
                     </a>
                   </div>
                 </div>
