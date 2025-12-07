@@ -1,7 +1,9 @@
 import { useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const IndigoPatternSection = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const navigate  = useNavigate();
 
   useEffect(() => {
     const video = videoRef.current;
@@ -59,7 +61,7 @@ const IndigoPatternSection = () => {
 
           {/* CTA Button */}
           <div className="pt-3 lg:pt-4">
-            <button className="inline-flex items-center justify-center px-6 py-2.5 sm:px-8 sm:py-3 bg-black hover:bg-[#7F1416] text-white font-medium text-sm sm:text-base transition-all duration-300 transform hover:scale-105 hover:shadow-lg active:scale-95">
+            <button onClick={()=>navigate('products/68ce8c1b02e2f084fad22de9')} className="inline-flex items-center justify-center px-6 py-2.5 sm:px-8 sm:py-3 bg-black hover:bg-[#7F1416] text-white font-medium text-sm sm:text-base transition-all duration-300 transform hover:scale-105 hover:shadow-lg active:scale-95">
               Explore Collection
             </button>
           </div>

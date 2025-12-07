@@ -13,6 +13,7 @@ import ModernProductSpecs from '../components/ModernProductSpecs/ModernProductSp
 import Seo from '../components/Seo/Seo';
 import JsonLd from '../components/Seo/JsonLd';
 
+
 const fetchProductDetails = async (productId: string | undefined): Promise<ApiResponse<Product>> => {
   if (!productId) throw new Error('Product ID is required');
   const res = await apiClient.get(`/products/${productId}`);
@@ -171,6 +172,58 @@ const ProductDetailsPage: React.FC = () => {
       setEnquiryStatus({ success: false, message: 'An error occurred. Please try again later.' });
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleShareProduct = async () => {
+    // Check if Web Share API is supported
+    if (navigator.share) {
+      try {
+        const shareData: ShareData = {
+          title: product?.name,
+          text: `Check out ${product?.name} at Fakira FAB - Hand-block printed artisan fabrics`,
+          url: typeof window !== 'undefined' ? window.location.href : '',
+        };
+
+        // Add image if Web Share API supports files
+        const imageUrl = currentImages[selectedImage] || product?.imageUrl;
+        if (navigator.canShare && imageUrl) {
+          try {
+            const response = await fetch(imageUrl);
+            const blob = await response.blob();
+            const file = new File([blob], 'product-image.jpg', { type: 'image/jpeg' });
+            
+            if (navigator.canShare({ files: [file] })) {
+              shareData.files = [file];
+            }
+          } catch (err) {
+            // If image fetch fails, continue without image
+            console.log('Could not attach image to share');
+          }
+        }
+
+        await navigator.share(shareData);
+      } catch (err: any) {
+        // User cancelled the share dialog
+        if (err.name !== 'AbortError') {
+          console.error('Error sharing:', err);
+        }
+      }
+    } else {
+      // Fallback for browsers that don't support Web Share API
+      // Copy to clipboard
+      const shareText = `Check out ${product?.name} at Fakira FAB\n${typeof window !== 'undefined' ? window.location.href : ''}`;
+      try {
+        await navigator.clipboard.writeText(shareText);
+        showToast({
+          type: 'success',
+          title: 'Link Copied!',
+          message: 'Product link copied to clipboard',
+          duration: 3000
+        });
+      } catch (err) {
+        console.error('Failed to copy:', err);
+      }
     }
   };
 
@@ -538,8 +591,19 @@ const ProductDetailsPage: React.FC = () => {
               <span>:</span>
               <span>RS. {(getCurrentPrice() * quantity).toLocaleString()}</span>
             </button>
-            
-            
+
+            {/* Share Button - Native Web Share API */}
+            <button
+              onClick={handleShareProduct}
+              className="w-full bg-white border-2 border-gray-800 text-gray-800 py-3 rounded-lg font-bold text-sm hover:bg-gray-100 transition-colors flex items-center justify-center space-x-2"
+            >
+              <span>
+                <svg className="w-5 h-5 inline" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.15c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.44 9.31 6.73 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.73 0 1.44-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/>
+                </svg>
+              </span>
+              <span>SHARE</span>
+            </button>
 
             {/* Product Specs - Below all price, quantity, and buttons */}
             <div>

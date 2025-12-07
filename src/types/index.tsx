@@ -138,3 +138,32 @@ export interface BannerResponse {
   totalPages: number;
   totalItems: number;
 }
+
+export interface Blog {
+  _id: string;
+  title: string;
+  slug: string;
+  shortDescription: string;
+  content: string;
+  metaTitle?: string;
+  metaDescription?: string;
+  metaKeywords?: string[];
+  image?: string;
+  author?: string;
+  category?: 
+    | "Styling Tips" 
+    | "Product Guides" 
+    | "Traditions" 
+    | "DIY" 
+    | "Care Tips" 
+    | "Trending" 
+    | "Fabric Guide" 
+    | "Design Inspiration";
+  tags?: string[];
+  published: boolean;
+  publishedAt?: string;
+  views?: number;
+  createdAt?: string;
+  updatedAt?: string;
+  __v?: number;
+}

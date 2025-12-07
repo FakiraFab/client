@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 interface StaticBanner {
   _id: string;
@@ -12,6 +13,7 @@ interface StaticCarouselProps {
   banners: StaticBanner[];
 }
 
+
 // Cloudinary optimization helper
 const optimizeImageUrl = (url: string, width: number, height: number) => {
   if (!url.includes("res.cloudinary.com")) return url;
@@ -24,6 +26,8 @@ const optimizeImageUrl = (url: string, width: number, height: number) => {
 const StaticCarousel: React.FC<StaticCarouselProps> = ({ banners }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [imageError, setImageError] = useState<{ [key: string]: boolean }>({});
+  const navigate = useNavigate(); 
+
 
   // Autoplay functionality
   useEffect(() => {
@@ -86,7 +90,7 @@ const StaticCarousel: React.FC<StaticCarouselProps> = ({ banners }) => {
               {banner.ctaText && (
                 <button
                   onClick={() =>
-                    banner.ctaLink && window.open(banner.ctaLink, "_blank")
+                    banner.ctaLink && navigate(banner.ctaLink)
                   }
                   className="group relative bg-transparent border-2 border-white text-white px-4 sm:px-6 md:px-12 py-2 sm:py-3 md:py-4 font-medium tracking-wider text-xs sm:text-sm md:text-base uppercase transition-all duration-300 hover:bg-white hover:text-black"
                 >
