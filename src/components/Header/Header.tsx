@@ -37,12 +37,14 @@ const Header: React.FC = () => {
 
   const navigationItems = [
     { name: 'Home', href: '/' },
+    { name: 'New Arrivals', href: 'new-arrivals' },
     { name: 'All Products', href: 'all-products' },
     { name: 'Categories', href: 'category' },
     { name: 'Workshops', href: 'workshops' },
     { name: 'About Us', href: 'about' },
-    { name: 'Our Policy', href: 'OurPolicy' },
-    { name: 'Blogs', href: 'blog' }
+    // { name: 'Our Policy', href: 'OurPolicy' },
+    { name: 'Blogs', href: 'blog' },
+
 
   ];
 
