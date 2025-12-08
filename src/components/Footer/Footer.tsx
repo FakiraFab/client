@@ -7,7 +7,6 @@ const Footer: React.FC = () => {
     'Sarees',
     'dupattas',
     'Bed Sheets',
-    'new-arrivals'
   ];
 
   const quickLinks = [
