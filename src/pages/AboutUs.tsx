@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ArrowRight, Heart, Award, Star, ChevronLeft, ChevronRight, VolumeX, Pause, Volume2, Play } from 'lucide-react';
+import { ArrowRight, Heart, Award, Star, ChevronLeft, ChevronRight, VolumeX, Pause, Volume2, Play, Facebook, Linkedin, Twitter, Globe } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Seo from '../components/Seo/Seo';
 import JsonLd from '../components/Seo/JsonLd';
@@ -12,7 +12,9 @@ const AboutUs: React.FC = () => {
   const [progress, setProgress] = useState(0);
 
   function generateCloudninaryUrl(publicId: string, width: number, height: number): string {  
-    return `https://res.cloudinary.com/dtst7rqhw/image/upload/q_auto,f_auto,w_${width},h_${height},c_fill/${publicId}`;
+    // Use c_fit to avoid cropping (fits the image within given box), enable dpr_auto for high-DPI
+    // and f_auto/q_auto for optimal format and quality.
+    return `https://res.cloudinary.com/dtst7rqhw/image/upload/q_auto,f_auto,dpr_auto,w_${width},h_${height},c_fit/${publicId}`;
   }
 
   // Carousel images for Legacy section
@@ -351,101 +353,223 @@ const AboutUs: React.FC = () => {
       </section>
 
       {/* Meet the Artisans Section */}
-      <section className="py-12 md:py-20 bg-white">
+      <section className="py-12 md:py-20 bg-gradient-to-b from-white to-red-50">
         <div className="container mx-auto px-4">
-          <div className="text-center space-y-4 mb-8 md:mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900">Meet Our Team</h2>
+          <div className="text-center space-y-4 mb-12 md:mb-20">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900">Meet Our Artisan Leaders</h2>
             <div className="w-16 h-1 bg-red-900 mx-auto"></div>
             <p className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto">
-              The heart of our craft lies in the skilled hands and creative spirits of our artisan community.
+              The visionaries and master craftsmen who keep the legacy of block printing alive and thriving.
             </p>
           </div>
-          
-          {/* Mobile Horizontal Scroll */}
-          <div className="md:hidden overflow-x-auto pb-4">
-            <div className="flex space-x-4" style={{ width: 'max-content' }}>
-              {[
-                {
-                  name: "Sajjid Udaipurwala",
-                  location: "Rajasthan",
-                  image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=500&q=80",
-                  quote: "Every block tells a story, every print carries our heritage forward."
-                },
-                {
-                  name: "Amir Udaipurwala",
-                  location: "Gujarat",
-                  image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=500&q=80",
-                  quote: "In each pattern, I weave the dreams and traditions of my ancestors."
-                },
-                {
-                  name: "Sakir Udaipurwala",
-                  location: "Ahmedabad",
-                  image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=500&q=80",
-                  quote: "The art of block printing is not just work, it's a meditation of the soul."
-                },
-               
-              ].map((artisan, index) => (
-                <div key={index} className="bg-gradient-to-br from-red-50 to-orange-50 p-6 text-center space-y-4 hover:shadow-lg transition-shadow duration-300" style={{ width: '280px', flexShrink: 0 }}>
-                  <div className="relative inline-block">
-                    <img
-                      src={artisan.image}
-                      alt={artisan.name}
-                      className="w-20 h-20 object-cover mx-auto border-4 border-white shadow-lg"
-                    />
-                    <div className="absolute -bottom-2 -right-2 bg-red-900 text-white w-8 h-8 flex items-center justify-center">
-                      <Star className="h-4 w-4" />
-                    </div>
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-semibold text-gray-900">{artisan.name}</h3>
-                    <p className="text-red-900 font-medium text-sm">{artisan.location}</p>
-                  </div>
-                  <p className="text-gray-600 italic text-sm">"{artisan.quote}"</p>
-                </div>
-              ))}
-            </div>
-          </div>
 
-          {/* Desktop Grid */}
-          <div className="hidden md:grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[
-              {
-                name: "Sajjid Udaipurwala(Founder)",
-                location: "Rajasthan",
-                image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80",
-                quote: "Every block tells a story, every print carries our heritage forward."
-              },
-              {
-                name: "Amir Udaipurwala(Co-Founder)",
-                location: "Gujarat",
-                image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80",
-                quote: "In each pattern, I weave the dreams and traditions of my ancestors."
-              },
-              {
-                name: "Sakir Udaipurwala(CEO)",
-                location: "Ahmedabad",
-                image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80",
-                quote: "The art of block printing is not just work, it's a meditation of the soul."
-              }
-            ].map((artisan, index) => (
-              <div key={index} className="bg-gradient-to-br from-red-50 to-orange-50 p-8 text-center space-y-4 hover:shadow-lg transition-shadow duration-300">
-                <div className="relative inline-block">
-                  <img
-                    src={artisan.image}
-                    alt={artisan.name}
-                    className="w-24 h-24 object-cover mx-auto shadow-lg"
-                  />
-                  <div className="absolute -bottom-2 -right-2 bg-red-900 text-white w-8 h-8 flex items-center justify-center">
-                    <Star className="h-4 w-4" />
-                  </div>
-                </div>
+          <div className="space-y-16 md:space-y-20">
+            {/* Artisan 1 */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-center">
+              <div className="order-2 md:order-1 space-y-6">
                 <div>
-                  <h3 className="text-xl font-semibold text-gray-900">{artisan.name}</h3>
-                  <p className="text-red-900 font-medium">{artisan.location}</p>
+                  <p className="text-red-900 font-semibold text-sm uppercase tracking-wider mb-2">Chairman</p>
+                  <h3 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">Faruk Ji</h3>
+                  <p className="text-lg text-red-900 font-medium">Ahmedabad</p>
                 </div>
-                <p className="text-gray-600 italic">"{artisan.quote}"</p>
+                
+                <p className="text-gray-600 leading-relaxed">
+                  Carries forward the vision and values of Fakruddin Ji. As Chairman, Faruk Ji provides strategic guidance, preserves heritage-driven craftsmanship, and oversees innovation within the brand. He ensures that Banjara Dyeing, traditional block printing, and artisanal authenticity remain the foundation of Fakira Fab. His leadership bridges the company’s historic roots with modern industry practices.
+                </p>
+                
+                <div className="space-y-3">
+                  <p className="italic text-gray-700 font-medium">
+                    "Every block tells a story, every print carries our heritage forward."
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    His leadership bridges the company’s historic roots with modern industry practices.
+                  </p>
+                </div>
+
+                <div className="flex items-center space-x-4 pt-4">
+                  <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="p-3 bg-red-900 text-white rounded-full hover:bg-red-800 transition-colors duration-200">
+                    <Facebook className="h-4 w-4" />
+                  </a>
+                  <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="p-3 bg-red-900 text-white rounded-full hover:bg-red-800 transition-colors duration-200">
+                    <Linkedin className="h-4 w-4" />
+                  </a>
+                  <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="p-3 bg-red-900 text-white rounded-full hover:bg-red-800 transition-colors duration-200">
+                    <Twitter className="h-4 w-4" />
+                  </a>
+                  <a href="#" className="p-3 bg-red-900 text-white rounded-full hover:bg-red-800 transition-colors duration-200">
+                    <Globe className="h-4 w-4" />
+                  </a>
+                </div>
               </div>
-            ))}
+
+              <div className="order-1 md:order-2 relative overflow-hidden shadow-2xl">
+                <img
+                  src="https://res.cloudinary.com/dhkaucebl/image/upload/c_auto,g_auto,h_1200,w_900/6197329464295885798_j6g0co"
+                  alt="Sajjid Udaipurwala"
+                  className="w-full h-80 md:h-96 object-cover"
+                />
+                <div className="absolute top-4 right-4 bg-red-900 text-white px-4 py-2 rounded-full flex items-center space-x-2">
+                  <Star className="h-4 w-4 fill-white" />
+                  <span className="text-sm font-semibold">Chairman</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Artisan 2 */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-center">
+              <div className="relative overflow-hidden shadow-2xl">
+                <img
+                  
+                  src="https://res.cloudinary.com/dhkaucebl/image/upload/v1765779373/6197329464295885797_giopi6.jpg"
+                  alt="Amir Udaipurwala"
+                  className="w-full h-80 md:h-96 object-cover"
+                />
+                <div className="absolute top-4 right-4 bg-red-900 text-white px-4 py-2 rounded-full flex items-center space-x-2">
+                  <Star className="h-4 w-4 fill-white" />
+                  <span className="text-sm font-semibold">Managing Director</span>
+                </div>
+              </div>
+
+              <div className="space-y-6">
+                <div>
+                  <p className="text-red-900 font-semibold text-sm uppercase tracking-wider mb-2">Managing Director(MD)</p>
+                  <h3 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">Sajid Ji</h3>
+                  <p className="text-lg text-red-900 font-medium">Gujarat</p>
+                </div>
+                
+                <p className="text-gray-600 leading-relaxed">
+                  Leads the organization with a focus on operational excellence and creative development. Sajid Ji supervises production workflows, dyeing and printing standardization, and quality benchmarks across departments. He plays a vital role in color innovation, maintaining consistency in Fakira Print and Banjara Dyeing techniques.
+                </p>
+                
+                <div className="space-y-3">
+                  <p className="italic text-gray-700 font-medium">
+                    "In each pattern, I weave the dreams and traditions of my ancestors."
+                  </p>
+                  <p className="text-sm text-gray-600">
+                   His management ensures timely delivery, efficiency, and continuous improvement throughout the company
+                  </p>
+                </div>
+
+                <div className="flex items-center space-x-4 pt-4">
+                  <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="p-3 bg-red-900 text-white rounded-full hover:bg-red-800 transition-colors duration-200">
+                    <Facebook className="h-4 w-4" />
+                  </a>
+                  <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="p-3 bg-red-900 text-white rounded-full hover:bg-red-800 transition-colors duration-200">
+                    <Linkedin className="h-4 w-4" />
+                  </a>
+                  <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="p-3 bg-red-900 text-white rounded-full hover:bg-red-800 transition-colors duration-200">
+                    <Twitter className="h-4 w-4" />
+                  </a>
+                  <a href="#" className="p-3 bg-red-900 text-white rounded-full hover:bg-red-800 transition-colors duration-200">
+                    <Globe className="h-4 w-4" />
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            {/* Artisan 3 */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-center">
+              <div className="order-2 md:order-1 space-y-6">
+                <div>
+                  <p className="text-red-900 font-semibold text-sm uppercase tracking-wider mb-2">Chief Executive Officer (CEO)</p>
+                  <h3 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">Aamir Ji</h3>
+                  <p className="text-lg text-red-900 font-medium">Ahmedabad</p>
+                </div>
+                
+                <p className="text-gray-600 leading-relaxed">
+                  (Elder Son of Faruk Ji)
+Oversees all major business functions, including wholesale sales, market expansion, brand partnerships, and strategic growth planning. Amir Ji drives Fakira Fab’s presence in domestic and international markets while nurturing long-term client relationships. Under his leadership, the brand is scaling with modern business models while staying rooted in traditional craftsmanship.
+                </p>
+                
+                <div className="space-y-3">
+                  <p className="italic text-gray-700 font-medium">
+                    "The art of block printing is not just work, it's a meditation of the soul."
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    Under his leadership, the brand is scaling with modern business models while staying rooted in traditional craftsmanship.
+                  </p>
+                </div>
+
+                <div className="flex items-center space-x-4 pt-4">
+                  <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="p-3 bg-red-900 text-white rounded-full hover:bg-red-800 transition-colors duration-200">
+                    <Facebook className="h-4 w-4" />
+                  </a>
+                  <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="p-3 bg-red-900 text-white rounded-full hover:bg-red-800 transition-colors duration-200">
+                    <Linkedin className="h-4 w-4" />
+                  </a>
+                  <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="p-3 bg-red-900 text-white rounded-full hover:bg-red-800 transition-colors duration-200">
+                    <Twitter className="h-4 w-4" />
+                  </a>
+                  <a href="#" className="p-3 bg-red-900 text-white rounded-full hover:bg-red-800 transition-colors duration-200">
+                    <Globe className="h-4 w-4" />
+                  </a>
+                </div>
+              </div>
+
+              <div className="order-1 md:order-2 relative overflow-hidden shadow-2xl">
+                <img
+                  src="https://res.cloudinary.com/dhkaucebl/image/upload/v1765779374/6197329464295885796_uhrx7s.jpg"
+                  alt="Sakir Udaipurwala"
+                  className="w-full h-80 md:h-96 object-cover"
+                />
+                <div className="absolute top-4 right-4 bg-red-900 text-white px-4 py-2 rounded-full flex items-center space-x-2">
+                  <Star className="h-4 w-4 fill-white" />
+                  <span className="text-sm font-semibold">CEO</span>
+                </div>
+              </div>
+            </div>
+
+              {/* Artisan 4 */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-center">
+              <div className="relative overflow-hidden shadow-2xl">
+                <img
+                  src="https://res.cloudinary.com/dhkaucebl/image/upload/v1765779374/6197329464295885795_ofmfpo.jpg"
+                  alt="Amir Udaipurwala"
+                  className="w-full h-80 md:h-96 object-cover"
+                />
+                <div className="absolute top-4 right-4 bg-red-900 text-white px-4 py-2 rounded-full flex items-center space-x-2">
+                  <Star className="h-4 w-4 fill-white" />
+                  <span className="text-sm font-semibold">COO</span>
+                </div>
+              </div>
+
+              <div className="space-y-6">
+                <div>
+                  <p className="text-red-900 font-semibold text-sm uppercase tracking-wider mb-2">Chief Operating Officer (COO)</p>
+                  <h3 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">Sakir Ji</h3>
+                  <p className="text-lg text-red-900 font-medium">Gujarat</p>
+                </div>
+                
+                <p className="text-gray-600 leading-relaxed">
+                  Responsible for the smooth execution of daily operations across dyeing, printing, inventory, and production management. He ensures efficient workflow, maintains product quality standards, supervises artisan teams, and coordinates inter-department processes.
+                  He plays a vital role in optimizing resources and streamlining operations to meet customer demands while upholding the brand’s commitment to craftsmanship. 
+                </p>
+                
+                <div className="space-y-3">
+                  <p className="italic text-gray-700 font-medium">
+                    "Efficiency and quality go hand in hand in our craft."
+                  </p>
+                  <p className="text-sm text-gray-600">
+                   His role is central to maintaining consistency, timely production, and the overall operational strength of Fakira Fab
+                  </p>
+                </div>
+
+                <div className="flex items-center space-x-4 pt-4">
+                  <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="p-3 bg-red-900 text-white rounded-full hover:bg-red-800 transition-colors duration-200">
+                    <Facebook className="h-4 w-4" />
+                  </a>
+                  <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="p-3 bg-red-900 text-white rounded-full hover:bg-red-800 transition-colors duration-200">
+                    <Linkedin className="h-4 w-4" />
+                  </a>
+                  <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="p-3 bg-red-900 text-white rounded-full hover:bg-red-800 transition-colors duration-200">
+                    <Twitter className="h-4 w-4" />
+                  </a>
+                  <a href="#" className="p-3 bg-red-900 text-white rounded-full hover:bg-red-800 transition-colors duration-200">
+                    <Globe className="h-4 w-4" />
+                  </a>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
