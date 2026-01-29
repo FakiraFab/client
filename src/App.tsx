@@ -33,6 +33,16 @@ const VerifyEmail = lazy(() => import('./pages/VerifyEmail'));
 const ForgotPassword = lazy(() => import('./pages/ForgotPassword'));
 const ResetPassword = lazy(() => import('./pages/ResetPassword'));
 
+// Account pages
+const Dashboard = lazy(() => import('./pages/account/Dashboard'));
+const ProfileInfo = lazy(() => import('./pages/account/ProfileInfo'));
+const AddressManagement = lazy(() => import('./pages/account/AddressManagement'));
+const OrderHistory = lazy(() => import('./pages/account/OrderHistory'));
+const Wishlist = lazy(() => import('./pages/account/Wishlist'));
+
+// Protected Route
+import ProtectedRoute from './components/ProtectedRoute';
+
 function AppContent() {
   const { toasts, removeToast } = useToast();
   
@@ -64,6 +74,13 @@ function AppContent() {
               <Route path="/verify-email" element={<VerifyEmail />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route path="/reset-password" element={<ResetPassword />} />
+              
+              {/* Account pages - Protected */}
+              <Route path="/account" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+              <Route path="/account/profile" element={<ProtectedRoute><ProfileInfo /></ProtectedRoute>} />
+              <Route path="/account/addresses" element={<ProtectedRoute><AddressManagement /></ProtectedRoute>} />
+              <Route path="/account/orders" element={<ProtectedRoute><OrderHistory /></ProtectedRoute>} />
+              <Route path="/account/wishlist" element={<ProtectedRoute><Wishlist /></ProtectedRoute>} />
             </Routes>
           </Suspense>
         </main>
