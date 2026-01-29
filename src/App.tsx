@@ -33,6 +33,9 @@ const VerifyEmail = lazy(() => import('./pages/VerifyEmail'));
 const ForgotPassword = lazy(() => import('./pages/ForgotPassword'));
 const ResetPassword = lazy(() => import('./pages/ResetPassword'));
 
+// Cart and Checkout
+const Cart = lazy(() => import('./pages/Cart'));
+
 // Account pages
 const Dashboard = lazy(() => import('./pages/account/Dashboard'));
 const ProfileInfo = lazy(() => import('./pages/account/ProfileInfo'));
@@ -74,6 +77,11 @@ function AppContent() {
               <Route path ="/FAQ" element={<FaqSection/>}/>
               <Route path="/blog" element={<BlogList />} />
               <Route path="/blog/:id" element={<BlogDetails />} />
+              
+              {/* Cart */}
+              <Route path="/cart" element={<Cart />} />
+              
+              {/* Auth routes */}
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
               <Route path="/verify-email" element={<VerifyEmail />} />
