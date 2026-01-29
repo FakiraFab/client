@@ -70,11 +70,25 @@ const ProfileInfo: React.FC = () => {
       return;
     }
 
-    if (passwordData.newPassword.length < 6) {
+    if (passwordData.newPassword.length < 8) {
       showToast({
         type: 'error',
         title: 'Invalid Password',
-        message: 'Password must be at least 6 characters long',
+        message: 'Password must be at least 8 characters long',
+        duration: 5000,
+      });
+      return;
+    }
+
+    const hasUpperCase = /[A-Z]/.test(passwordData.newPassword);
+    const hasLowerCase = /[a-z]/.test(passwordData.newPassword);
+    const hasNumber = /[0-9]/.test(passwordData.newPassword);
+
+    if (!hasUpperCase || !hasLowerCase || !hasNumber) {
+      showToast({
+        type: 'error',
+        title: 'Invalid Password',
+        message: 'Password must contain uppercase, lowercase, and numbers',
         duration: 5000,
       });
       return;
@@ -83,12 +97,14 @@ const ProfileInfo: React.FC = () => {
     setIsLoading(true);
 
     try {
-      // Note: You may need to add a changePassword endpoint to authApi
+      // TODO: Implement password change API endpoint
+      // await authApi.changePassword(passwordData.currentPassword, passwordData.newPassword);
+      
       showToast({
-        type: 'success',
-        title: 'Password Changed',
-        message: 'Your password has been changed successfully',
-        duration: 3000,
+        type: 'info',
+        title: 'Feature Coming Soon',
+        message: 'Password change functionality will be available soon',
+        duration: 5000,
       });
       setShowPasswordModal(false);
       setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
@@ -296,8 +312,11 @@ const ProfileInfo: React.FC = () => {
                   onChange={handlePasswordChange}
                   className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-red-500 focus:ring-red-500"
                   required
-                  minLength={6}
+                  minLength={8}
                 />
+                <p className="mt-1 text-xs text-gray-500">
+                  Must be at least 8 characters with uppercase, lowercase, and numbers
+                </p>
               </div>
 
               <div>
@@ -312,7 +331,7 @@ const ProfileInfo: React.FC = () => {
                   onChange={handlePasswordChange}
                   className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-red-500 focus:ring-red-500"
                   required
-                  minLength={6}
+                  minLength={8}
                 />
               </div>
 

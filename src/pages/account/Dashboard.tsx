@@ -30,7 +30,9 @@ const Dashboard: React.FC = () => {
 
         if (ordersRes.success && ordersRes.data) {
           setRecentOrders(ordersRes.data);
-          setStats(prev => ({ ...prev, ordersCount: ordersRes.data.length }));
+          // Use total from pagination if available, otherwise use array length
+          const totalOrders = ordersRes.total || ordersRes.pagination?.total || ordersRes.data.length;
+          setStats(prev => ({ ...prev, ordersCount: totalOrders }));
         }
 
         if (wishlistRes.success && wishlistRes.data) {
