@@ -41,6 +41,10 @@ const OrderHistory = lazy(() => import('./pages/account/OrderHistory'));
 const OrderDetails = lazy(() => import('./pages/account/OrderDetails'));
 const Wishlist = lazy(() => import('./pages/account/Wishlist'));
 
+// Checkout pages
+const Checkout = lazy(() => import('./pages/Checkout'));
+const OrderConfirmation = lazy(() => import('./pages/OrderConfirmation'));
+
 // Protected Route
 import ProtectedRoute from './components/ProtectedRoute';
 
@@ -75,6 +79,10 @@ function AppContent() {
               <Route path="/verify-email" element={<VerifyEmail />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route path="/reset-password" element={<ResetPassword />} />
+              
+              {/* Checkout pages - Protected */}
+              <Route path="/checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
+              <Route path="/order-confirmation/:id" element={<ProtectedRoute><OrderConfirmation /></ProtectedRoute>} />
               
               {/* Account pages - Protected */}
               <Route path="/account" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
