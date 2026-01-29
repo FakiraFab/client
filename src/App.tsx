@@ -38,6 +38,7 @@ const Dashboard = lazy(() => import('./pages/account/Dashboard'));
 const ProfileInfo = lazy(() => import('./pages/account/ProfileInfo'));
 const AddressManagement = lazy(() => import('./pages/account/AddressManagement'));
 const OrderHistory = lazy(() => import('./pages/account/OrderHistory'));
+const OrderDetails = lazy(() => import('./pages/account/OrderDetails'));
 const Wishlist = lazy(() => import('./pages/account/Wishlist'));
 
 // Protected Route
@@ -80,6 +81,7 @@ function AppContent() {
               <Route path="/account/profile" element={<ProtectedRoute><ProfileInfo /></ProtectedRoute>} />
               <Route path="/account/addresses" element={<ProtectedRoute><AddressManagement /></ProtectedRoute>} />
               <Route path="/account/orders" element={<ProtectedRoute><OrderHistory /></ProtectedRoute>} />
+              <Route path="/account/orders/:id" element={<ProtectedRoute><OrderDetails /></ProtectedRoute>} />
               <Route path="/account/wishlist" element={<ProtectedRoute><Wishlist /></ProtectedRoute>} />
             </Routes>
           </Suspense>
