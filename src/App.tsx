@@ -4,6 +4,7 @@ import Header from './components/Header/Header';
 import Footer from './components/Footer/Footer';
 import ScrollToTop from './components/ScrollTop/ScrollTop';
 import { CartProvider } from './context/CartContext';
+import { AuthProvider } from './context/AuthContext';
 import { ToastProvider, useToast } from './context/ToastContext';
 import { HelmetProvider } from 'react-helmet-async';
 import ToastContainer from './components/Toast/ToastContainer';
@@ -24,6 +25,8 @@ const NewArrivals = lazy(() => import('./pages/NewArrivals'));
 const TermsAndConditions = lazy(() => import('./pages/TermsAndConditions'));
 const BlogList = lazy(() => import('./pages/BlogList'));
 const BlogDetails = lazy(() => import('./pages/BlogDetails'));
+
+// Auth pages
 const Login = lazy(() => import('./pages/Login'));
 const Signup = lazy(() => import('./pages/Signup'));
 const VerifyEmail = lazy(() => import('./pages/VerifyEmail'));
@@ -80,12 +83,14 @@ function App() {
   return (
     <HelmetProvider>
       <ToastProvider>
-        <CartProvider>
-          <Router>
-            <AppContent />
-            <Analytics />
-          </Router>
-        </CartProvider>
+        <AuthProvider>
+          <CartProvider>
+            <Router>
+              <AppContent />
+              <Analytics />
+            </Router>
+          </CartProvider>
+        </AuthProvider>
       </ToastProvider>
     </HelmetProvider>
   );

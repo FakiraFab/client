@@ -1,5 +1,5 @@
-import { Address } from './address';
-import { Product } from './index';
+import type { Address } from './address';
+import type { Product } from './index';
 
 export type OrderStatus = 
   | 'pending' 
