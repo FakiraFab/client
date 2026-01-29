@@ -24,6 +24,11 @@ const NewArrivals = lazy(() => import('./pages/NewArrivals'));
 const TermsAndConditions = lazy(() => import('./pages/TermsAndConditions'));
 const BlogList = lazy(() => import('./pages/BlogList'));
 const BlogDetails = lazy(() => import('./pages/BlogDetails'));
+const Login = lazy(() => import('./pages/Login'));
+const Signup = lazy(() => import('./pages/Signup'));
+const VerifyEmail = lazy(() => import('./pages/VerifyEmail'));
+const ForgotPassword = lazy(() => import('./pages/ForgotPassword'));
+const ResetPassword = lazy(() => import('./pages/ResetPassword'));
 
 function AppContent() {
   const { toasts, removeToast } = useToast();
@@ -51,6 +56,11 @@ function AppContent() {
               <Route path ="/FAQ" element={<FaqSection/>}/>
               <Route path="/blog" element={<BlogList />} />
               <Route path="/blog/:id" element={<BlogDetails />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/signup" element={<Signup />} />
+              <Route path="/verify-email" element={<VerifyEmail />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
             </Routes>
           </Suspense>
         </main>
