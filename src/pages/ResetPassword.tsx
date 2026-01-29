@@ -20,7 +20,7 @@ const ResetPassword: React.FC = () => {
 
   const getPasswordStrength = (password: string): string => {
     if (!password) return '';
-    if (password.length < 6) return 'weak';
+    if (password.length < 8) return 'weak';
     if (password.length < 10 && /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(password)) return 'medium';
     if (password.length >= 10 && /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])/.test(password)) return 'strong';
     return 'medium';
