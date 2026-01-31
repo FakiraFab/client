@@ -89,7 +89,13 @@ export const findBackendItemId = (
       item.selectedColor
     );
     if (backendKey === frontendItemId) {
-      return item._id || null;
+      // Backend items from API responses should always have _id
+      // If missing, log error and return null
+      if (!item._id) {
+        console.error('Backend cart item missing _id:', item);
+        return null;
+      }
+      return item._id;
     }
   }
   return null;

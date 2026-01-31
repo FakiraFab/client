@@ -5,6 +5,7 @@ import { useAuth } from './AuthContext';
 import { cartApi, type BackendCartItem } from '../api/cart';
 import { mergeCartItems, findBackendItemId } from '../utils/cartUtils';
 import { useToast } from './ToastContext';
+import apiClient from '../api/client';
 
 // Cart item interface
 export interface CartItem {
@@ -156,13 +157,9 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
   // Helper: Fetch product details for a cart item (needed when rehydrating from backend)
   const fetchProductForCartItem = useCallback(async (backendItem: BackendCartItem): Promise<CartItem | null> => {
     try {
-      // TODO: Replace with actual product API call
-      // For now, we'll need to fetch the product from the products API
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/products/${backendItem.productId}`);
-      if (!response.ok) return null;
-      
-      const data = await response.json();
-      const product: Product = data.data;
+      // Use apiClient for consistency with other API calls
+      const response = await apiClient.get(`/products/${backendItem.productId}`);
+      const product: Product = response.data.data;
       
       return {
         id: generateCartItemId(product, backendItem.selectedVariant, backendItem.selectedColor),
@@ -179,17 +176,33 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
 
   // Helper: Rehydrate cart items from backend (fetch full product data)
   const rehydrateCartFromBackend = useCallback(async (backendItems: BackendCartItem[]): Promise<CartItem[]> => {
-    const cartItems: CartItem[] = [];
+    // Fetch all products in parallel for better performance
+    const productPromises = backendItems.map(item => fetchProductForCartItem(item));
+    const results = await Promise.all(productPromises);
     
-    for (const backendItem of backendItems) {
-      const cartItem = await fetchProductForCartItem(backendItem);
-      if (cartItem) {
-        cartItems.push(cartItem);
+    // Filter out failed fetches and collect errors
+    const cartItems: CartItem[] = [];
+    let failedCount = 0;
+    
+    for (const result of results) {
+      if (result) {
+        cartItems.push(result);
+      } else {
+        failedCount++;
       }
     }
     
+    // Show error toast if some products failed to load
+    if (failedCount > 0) {
+      showToast({
+        type: 'error',
+        title: 'Some items could not be loaded',
+        message: `${failedCount} item(s) failed to load. Please refresh the page.`
+      });
+    }
+    
     return cartItems;
-  }, [fetchProductForCartItem]);
+  }, [fetchProductForCartItem, showToast]);
 
   // Effect 1: Initial cart hydration on mount/auth change
   useEffect(() => {
@@ -197,8 +210,9 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
       // Wait for auth to finish loading
       if (authLoading) return;
       
-      // Prevent duplicate hydrations
+      // Prevent duplicate hydrations - set flag immediately
       if (isHydratedRef.current && prevAuthRef.current === isAuthenticated) return;
+      isHydratedRef.current = true;
       
       try {
         if (isAuthenticated) {
@@ -209,15 +223,13 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
           // Rehydrate cart items with full product data
           const cartItems = await rehydrateCartFromBackend(backendCart.items);
           dispatch({ type: 'LOAD_CART', payload: cartItems });
-          
-          isHydratedRef.current = true;
-        } else {
-          // Guest: Cart is already initialized from localStorage
-          isHydratedRef.current = true;
         }
+        // Guest: Cart is already initialized from localStorage
       } catch (error) {
         console.error('Error hydrating cart:', error);
         showToast({ type: 'error', title: 'Failed to load cart', message: 'Please try again later' });
+        // Reset flag to allow retry
+        isHydratedRef.current = false;
       }
     };
 
@@ -234,10 +246,12 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
       const wasGuest = !prevAuthRef.current;
       const isNowAuthenticated = isAuthenticated;
       
-      if (wasGuest && isNowAuthenticated && !isSyncingRef.current) {
+      if (wasGuest && isNowAuthenticated) {
+        // Set flag immediately to prevent race conditions
+        if (isSyncingRef.current) return;
+        isSyncingRef.current = true;
+        
         try {
-          isSyncingRef.current = true;
-          
           // Get guest cart from localStorage
           const guestCartStr = localStorage.getItem('fakira-cart');
           const guestItems: CartItem[] = guestCartStr ? JSON.parse(guestCartStr) : [];
