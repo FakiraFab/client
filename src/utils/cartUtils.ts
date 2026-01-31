@@ -2,17 +2,24 @@ import type { CartItem } from '../context/CartContext';
 import type { BackendCartItem } from '../api/cart';
 
 /**
- * Generates a unique cart item ID based on product and variant
+ * Generates a unique cart item ID based on product, variant, and color
  */
 export const generateCartItemId = (
   productId: string,
   selectedVariant?: number,
-  _selectedColor?: string
+  selectedColor?: string
 ): string => {
+  const parts = [productId];
+  
   if (selectedVariant !== undefined && selectedVariant >= 0) {
-    return `${productId}-variant-${selectedVariant}`;
+    parts.push(`variant-${selectedVariant}`);
   }
-  return productId;
+  
+  if (selectedColor) {
+    parts.push(`color-${selectedColor}`);
+  }
+  
+  return parts.join('-');
 };
 
 /**

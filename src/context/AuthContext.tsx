@@ -17,7 +17,7 @@ interface AuthState {
 
 // Auth context interface
 interface AuthContextType extends AuthState {
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string) => Promise<void>;
   logout: () => void;
   setUser: (user: User | null) => void;
 }
@@ -72,7 +72,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }, []);
 
   // Login function
-  const login = async (email: string, _password: string) => {
+  const login = async (email: string) => {
     try {
       // TODO: Replace with actual API call
       // For now, this is a mock implementation

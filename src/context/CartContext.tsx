@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useReducer, useEffect, useRef } from 'react';
+import React, { createContext, useContext, useReducer, useEffect, useRef, useCallback } from 'react';
 import type { ReactNode } from 'react';
 import type { Product } from '../types';
 import { useAuth } from './AuthContext';
@@ -154,7 +154,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
   const cartMode: CartMode = isAuthenticated ? 'AUTHENTICATED' : 'GUEST';
 
   // Helper: Fetch product details for a cart item (needed when rehydrating from backend)
-  const fetchProductForCartItem = async (backendItem: BackendCartItem): Promise<CartItem | null> => {
+  const fetchProductForCartItem = useCallback(async (backendItem: BackendCartItem): Promise<CartItem | null> => {
     try {
       // TODO: Replace with actual product API call
       // For now, we'll need to fetch the product from the products API
@@ -165,7 +165,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
       const product: Product = data.data;
       
       return {
-        id: generateCartItemId(product, backendItem.selectedVariant),
+        id: generateCartItemId(product, backendItem.selectedVariant, backendItem.selectedColor),
         product,
         quantity: backendItem.quantity,
         selectedVariant: backendItem.selectedVariant,
@@ -175,10 +175,10 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
       console.error('Error fetching product for cart item:', error);
       return null;
     }
-  };
+  }, []);
 
   // Helper: Rehydrate cart items from backend (fetch full product data)
-  const rehydrateCartFromBackend = async (backendItems: BackendCartItem[]): Promise<CartItem[]> => {
+  const rehydrateCartFromBackend = useCallback(async (backendItems: BackendCartItem[]): Promise<CartItem[]> => {
     const cartItems: CartItem[] = [];
     
     for (const backendItem of backendItems) {
@@ -189,7 +189,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     }
     
     return cartItems;
-  };
+  }, [fetchProductForCartItem]);
 
   // Effect 1: Initial cart hydration on mount/auth change
   useEffect(() => {
@@ -222,7 +222,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     };
 
     hydrateCart();
-  }, [isAuthenticated, authLoading]);
+  }, [isAuthenticated, authLoading, rehydrateCartFromBackend, showToast]);
 
   // Effect 2: Handle login transition (cart merge)
   useEffect(() => {
@@ -275,7 +275,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     };
 
     handleLoginTransition();
-  }, [isAuthenticated, authLoading]);
+  }, [isAuthenticated, authLoading, rehydrateCartFromBackend, showToast]);
 
   // Effect 3: Save guest cart to localStorage (only for guest mode)
   useEffect(() => {
@@ -285,16 +285,23 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
   }, [state.items, isAuthenticated, authLoading]);
 
   // Generate unique cart item ID
-  const generateCartItemId = (product: Product, selectedVariant?: number): string => {
+  const generateCartItemId = (product: Product, selectedVariant?: number, selectedColor?: string): string => {
+    const parts = [product._id];
+    
     if (selectedVariant !== undefined && selectedVariant >= 0) {
-      return `${product._id}-variant-${selectedVariant}`;
+      parts.push(`variant-${selectedVariant}`);
     }
-    return product._id;
+    
+    if (selectedColor) {
+      parts.push(`color-${selectedColor}`);
+    }
+    
+    return parts.join('-');
   };
 
   // Add item to cart
   const addToCart = async (product: Product, quantity: number, selectedVariant?: number, selectedColor?: string) => {
-    const id = generateCartItemId(product, selectedVariant);
+    const id = generateCartItemId(product, selectedVariant, selectedColor);
     const cartItem: CartItem = {
       id,
       product,
