@@ -25,6 +25,7 @@ const NewArrivals = lazy(() => import('./pages/NewArrivals'));
 const TermsAndConditions = lazy(() => import('./pages/TermsAndConditions'));
 const BlogList = lazy(() => import('./pages/BlogList'));
 const BlogDetails = lazy(() => import('./pages/BlogDetails'));
+const CartTest = lazy(() => import('./pages/CartTest'));
 
 function AppContent() {
   const { toasts, removeToast } = useToast();
@@ -52,6 +53,7 @@ function AppContent() {
               <Route path ="/FAQ" element={<FaqSection/>}/>
               <Route path="/blog" element={<BlogList />} />
               <Route path="/blog/:id" element={<BlogDetails />} />
+              <Route path="/cart-test" element={<CartTest />} />
             </Routes>
           </Suspense>
         </main>
