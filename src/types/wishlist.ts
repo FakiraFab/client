@@ -8,4 +8,5 @@ export interface WishlistItem {
 
 export interface Wishlist {
   items: WishlistItem[];
+  length: number;
 }

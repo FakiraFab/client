@@ -36,11 +36,11 @@ const Dashboard: React.FC = () => {
         }
 
         if (wishlistRes.success && wishlistRes.data) {
-          setStats(prev => ({ ...prev, wishlistCount: wishlistRes.data.items.length }));
+          setStats(prev => ({ ...prev, wishlistCount: wishlistRes?.data?.length }));
         }
 
         if (addressesRes.success && addressesRes.data) {
-          setStats(prev => ({ ...prev, addressesCount: addressesRes.data.length }));
+          setStats(prev => ({ ...prev, addressesCount: addressesRes?.data.length }));
         }
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
