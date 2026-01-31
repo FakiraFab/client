@@ -142,13 +142,13 @@ const ProductCard = ({ product }: ProductCardProps) => {
     e.stopPropagation();
   };
 
-  const handleAddToCart = (e: React.MouseEvent) => {
+  const handleAddToCart = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     
     if (isOutOfStock) return;
     
-    addToCart(product, 1);
+    await addToCart(product, 1);
     
     showToast({
       type: 'success',

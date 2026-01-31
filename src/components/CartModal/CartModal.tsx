@@ -11,9 +11,9 @@ const CartModal: React.FC = () => {
   const [selectedCartItem, setSelectedCartItem] = useState<CartItem | null>(null);
   const [isEnquiryFormOpen, setIsEnquiryFormOpen] = useState(false);
 
-  const handleQuantityChange = (item: CartItem, change: number) => {
+  const handleQuantityChange = async (item: CartItem, change: number) => {
     const newQuantity = Math.max(1, item.quantity + change);
-    updateQuantity(item.id, newQuantity);
+    await updateQuantity(item.id, newQuantity);
   };
 
   const handleBuyNow = (item: CartItem) => {
