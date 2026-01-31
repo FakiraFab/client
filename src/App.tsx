@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Header from './components/Header/Header';
 import Footer from './components/Footer/Footer';
 import ScrollToTop from './components/ScrollTop/ScrollTop';
+import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
 import { ToastProvider, useToast } from './context/ToastContext';
 import { HelmetProvider } from 'react-helmet-async';
@@ -69,14 +70,16 @@ function AppContent() {
 function App() {
   return (
     <HelmetProvider>
-      <ToastProvider>
-        <CartProvider>
-          <Router>
-            <AppContent />
-            <Analytics />
-          </Router>
-        </CartProvider>
-      </ToastProvider>
+      <AuthProvider>
+        <ToastProvider>
+          <CartProvider>
+            <Router>
+              <AppContent />
+              <Analytics />
+            </Router>
+          </CartProvider>
+        </ToastProvider>
+      </AuthProvider>
     </HelmetProvider>
   );
 }

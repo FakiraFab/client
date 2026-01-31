@@ -145,10 +145,10 @@ const ProductDetailsPage: React.FC = () => {
     setEnquiryStatus(null); // Reset status when closing form
   };
 
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
     if (!product) return;
     
-    addToCart(product, quantity, selectedVariant >= 0 ? selectedVariant : undefined, getCurrentColor());
+    await addToCart(product, quantity, selectedVariant >= 0 ? selectedVariant : undefined, getCurrentColor());
     
     // Show success toast
     showToast({

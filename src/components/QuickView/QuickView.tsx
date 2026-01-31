@@ -46,11 +46,11 @@ const QuickView: React.FC<QuickViewProps> = ({ product, isOpen, onClose }) => {
     console.log('Add to wishlist:', productId);
   };
 
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
     if (stockQuantity === 0) return;
     
     // Add to cart with default quantity 1
-    addToCart(product, 1);
+    await addToCart(product, 1);
     
     // Show success toast and close modal
     showToast({
