@@ -1,15 +1,26 @@
+
 import React, { useState } from 'react';
 import ProductCard from '../components/ProductCard';
-import { useQuery } from '@tanstack/react-query';
+import { useInfiniteQuery } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import apiClient from '../api/client';
-import type { Product, ApiResponse } from '../types';
+import type { Product } from '../types';
+import Seo from '../components/Seo/Seo';
+import JsonLd from '../components/Seo/JsonLd';
+import { FaqSection } from '../components/StaticSections';
+import CircularImageFilter from '../components/CircularImageFilter';
 
-// Fetch all products
-const fetchAllProducts = async (): Promise<ApiResponse<Product[]>> => {
+// Fetch all products with pagination
+const fetchAllProducts = async ({ 
+  pageParam = 1 
+}: { 
+  pageParam?: number 
+}) => {
   const res = await apiClient.get('/products', {
     params: {
       sort: '-createdAt',
-      limit: 50 // Adjust based on your needs
+      page: pageParam,
+      limit: 12
     }
   });
   return res.data;
@@ -17,17 +28,54 @@ const fetchAllProducts = async (): Promise<ApiResponse<Product[]>> => {
 
 const AllProducts: React.FC = () => {
   const [sortBy, setSortBy] = useState<string>('featured');
+  const navigate = useNavigate();
 
-  const { data = { success: true, data: [], pagination: { total: 0, page: 1, pages: 1 } }, isLoading, error } = useQuery({
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading,
+    error
+  } = useInfiniteQuery({
     queryKey: ['allProducts'],
     queryFn: fetchAllProducts,
+    getNextPageParam: (lastPage) => {
+      if (!lastPage.pagination) return undefined;
+      return lastPage.pagination.page < lastPage.pagination.pages ? lastPage.pagination.page + 1 : undefined;
+    },
+    initialPageParam: 1,
   });
+
+  // Intersection Observer for infinite scroll
+  const observerTarget = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+          fetchNextPage();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (observerTarget.current) {
+      observer.observe(observerTarget.current);
+    }
+
+    return () => {
+      if (observerTarget.current) {
+        observer.unobserve(observerTarget.current);
+      }
+    };
+  }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
 
   // Sort products based on selected option
   const sortedProducts = React.useMemo(() => {
-    if (!data.data) return [];
+    if (!data?.pages) return [];
     
-    const products = [...data.data];
+    const products = data.pages.flatMap(page => page.data);
     
     switch (sortBy) {
       case 'price-low':
@@ -41,17 +89,56 @@ const AllProducts: React.FC = () => {
       default:
         return products; // Featured - keep original order
     }
-  }, [data.data, sortBy]);
+  }, [data?.pages, sortBy]);
+
+  // SEO values
+  const pageTitle = "All Products | Handmade Fabrics, Sarees, Dresses & Men's Wear | Fakira FAB";
+  const pageDesc = 'Discover authentic hand-block-printed sarees, unstitched fabrics, suit pieces, dupattas, bedsheets, and men’s clothing at Fakira Fab—premium quality, timeless designs, handcrafted with love.';
+  const canonicalUrl = 'https://www.fakirafab.com/all-products';
+  const ogImage = 'https://www.fakirafab.com/og-all-products.jpg';
+  const keywords = 'handmade fabrics, sarees, dress materials, women clothing, artisan, block print, Fakira FAB, premium textiles, accessories';
+
+  // JSON-LD schema for CollectionPage
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    "name": "All Products",
+    "description": pageDesc,
+    "url": canonicalUrl,
+    "image": ogImage,
+    "keywords": keywords,
+    "publisher": {
+      "@type": "Organization",
+      "name": "Fakira FAB",
+      "url": "https://www.fakirafab.com/",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://www.fakirafab.com/logo.png"
+      }
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
+      <Seo
+        title={pageTitle}
+        description={pageDesc}
+        url={canonicalUrl}
+        image={ogImage}
+        type="website"
+        keywords={keywords}
+        imageAlt="All products at Fakira FAB - Handmade Fabrics, Sarees, Dresses & More"
+      />
+      <JsonLd data={jsonLd} />
       {/* Hero Header Section */}
       <div className="relative h-64 sm:h-80 lg:h-96 overflow-hidden">
-        {/* Background with decorative elements */}
-        <div className="absolute inset-0 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900">
-          <div className="absolute top-0 left-1/4 w-96 h-96 bg-gradient-to-br from-purple-400/20 to-pink-400/20 rounded-full blur-3xl transform -translate-y-1/2"></div>
-          <div className="absolute bottom-0 right-1/4 w-80 h-80 bg-gradient-to-br from-blue-400/20 to-cyan-400/20 rounded-full blur-3xl transform translate-y-1/2"></div>
-        </div>
+         
+        <img 
+          // src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8ZmFicmljJTIwZGVzaWdufGVufDB8fDB8fHww&auto=format&fit=crop&w=1470&q=80" 
+          src="https://images.unsplash.com/photo-1755408007655-9ac329cfa145?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" 
+          alt="New Arrivals Background" 
+          className="absolute inset-0 w-full h-full object-cover object-center"
+        />
         
         {/* Overlay for text readability */}
         <div className="absolute inset-0 bg-black/40"></div>
@@ -66,11 +153,43 @@ const AllProducts: React.FC = () => {
               Discover our complete collection of premium fabrics, sarees, dress materials, and more
             </p>
             <div className="mt-8 flex justify-center">
-              <div className="w-24 h-1 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full"></div>
+              <div className="w-40 h-1 bg-white rounded-full"></div>
             </div>
           </div>
         </div>
       </div>
+
+      {/* Circular Image Filter Section */}
+      <CircularImageFilter
+        categories={[
+           {
+            name: "Sarees",
+            img: "https://res.cloudinary.com/dhkaucebl/image/upload/w_400,h_400,c_fill,ar_1:1,g_auto,q_auto,f_auto/v1760011020/sp0kuh8ihnbdcnmnwlcz.jpg",
+            value: "Sarees"
+          },
+          {
+            name: "Fabrics",
+            img: "https://res.cloudinary.com/dtst7rqhw/image/upload/v1758265744/6226250966609545720_h7uygy.jpg",
+            value: "Unstitch Fabrics"
+          },
+          {
+            name: "Dupattas",
+            img: "https://res.cloudinary.com/dhkaucebl/image/upload/w_400,h_400,c_fill,ar_1:1,g_auto,q_auto,f_auto/v1760008642/dlc9gmerxvazwwmi1uqt.jpg",
+            value: "dupattas"
+          },
+          {
+            name: "Bedsheets",
+            img: "https://res.cloudinary.com/dhkaucebl/image/upload/w_400,h_400,c_fill,ar_1:1,g_auto,q_auto,f_auto/v1764936905/hjtuhrf6cayxlko41ap9.jpg",
+            value: "Bed Sheets"
+          },
+         
+        ]}
+        onCategorySelect={(category) => {
+          if (category.value) {
+            navigate(`/category/${category.value}`);
+          }
+        }}
+      />
 
       {/* Filter and Sort Section */}
       <div className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-gray-200 shadow-sm">
@@ -178,42 +297,22 @@ const AllProducts: React.FC = () => {
           </div>
         )}
 
-        {/* Load More Section */}
-        {!isLoading && !error && sortedProducts.length > 0 && (
-          <div className="mt-12 sm:mt-16 text-center">
-            <button className="inline-flex items-center px-8 py-4 bg-white border-2 border-gray-200 text-gray-700 font-medium rounded-xl hover:border-purple-300 hover:text-purple-600 transition-all duration-200 shadow-sm hover:shadow-md">
-              <span>Load More Products</span>
-              <svg className="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-              </svg>
-            </button>
+        {/* Infinite Scroll Loading Indicator */}
+        {!error && (hasNextPage || isFetchingNextPage) && (
+          <div 
+            ref={observerTarget}
+            className="mt-8 sm:mt-12 text-center p-4"
+          >
+            <div className="inline-flex items-center gap-2 text-gray-600">
+              <div className="w-4 h-4 border-2 border-[#7F1416] border-t-transparent rounded-full animate-spin"></div>
+              <span>{isFetchingNextPage ? 'Loading more products...' : 'Load more products'}</span>
+            </div>
           </div>
         )}
       </div>
+      <FaqSection />
 
-      {/* Newsletter Section */}
-      <div className="bg-gradient-to-r from-slate-900 to-slate-800 mt-16">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
-          <div className="text-center max-w-2xl mx-auto">
-            <h3 className="text-2xl sm:text-3xl font-bold text-white mb-4">
-              Stay In Style
-            </h3>
-            <p className="text-gray-300 mb-8">
-              Get the latest trends, exclusive offers, and style inspiration delivered to your inbox.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
-              <input 
-                type="email" 
-                placeholder="Enter your email"
-                className="flex-1 px-4 py-3 rounded-xl border-0 focus:outline-none focus:ring-2 focus:ring-purple-400"
-              />
-              <button className="px-6 py-3 bg-[#7F1416] from-red-900 to-red-800 text-white font-medium rounded-xl hover:from-purple-700 hover:to-pink-700 transition-all duration-200">
-                Subscribe
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
+      
 
       {/* <style jsx>{`
         @keyframes fadeInUp {

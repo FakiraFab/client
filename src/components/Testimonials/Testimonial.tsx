@@ -16,7 +16,7 @@ const Testimonials: React.FC = () => {
       name: 'Ravi Kumar',
       location: 'Delhi',
       rating: 5,
-      comment: 'PAPARA FAB has become my go-to destination for premium fabrics. The variety and authenticity are unmatched.',
+      comment: 'Fakira Fab has become my go-to destination for premium fabrics. The variety and authenticity are unmatched.',
       image: 'https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg?auto=compress&cs=tinysrgb&w=150'
     },
     {
@@ -30,7 +30,7 @@ const Testimonials: React.FC = () => {
   ];
 
   return (
-    <section className="py-20 bg-white">
+    <section className="py-20 ">
       <div className="container mx-auto px-4">
         {/* Section Header */}
         <div className="text-center mb-16">
@@ -39,7 +39,7 @@ const Testimonials: React.FC = () => {
           </h2>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
             Don't just take our word for it. Here's what our satisfied customers 
-            have to say about their experience with PAPARA FAB.
+            have to say about their experience with Fakira Fab.
           </p>
         </div>
 

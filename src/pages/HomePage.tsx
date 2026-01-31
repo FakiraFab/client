@@ -4,7 +4,7 @@ import NewArrivals from '../components/NewArrivals/NewArrivals';
 import CategoriesGrid from '../components/Categories/CategoriesGrid';
 import ProductsByCategory from '../components/ProductByCategory/ProductByCategory';
 
-import SupportArtisans from '../components/SupportArtisans/SupportArtisans';
+// import SupportArtisans from '../components/SupportArtisans/SupportArtisans';
 import Carousel from '../components/Carousel/Carousel';
 import { useNavigate } from 'react-router-dom';
 import apiClient from '../api/client';
@@ -13,12 +13,57 @@ import type { Category, Product, Reel, Banner, ApiResponse } from '../types';
 import { fetchActiveReels } from '../api/products';
 import { fetchActiveBanners } from '../api/banners';
 import WorkshopSection from '../components/WorkshopSection/WorkshopSection';
+import { IndigoPatternSection, TouchFeelCreateHero } from '../components/StaticSections';
 import { 
   HeroSkeleton, 
   ReelsGridSkeleton, 
   ProductGridSkeleton, 
   CategoriesGridSkeleton 
 } from '../components/SkeletonLoader';
+import AutoCarousel from '../components/AutoCarousel/AutoCarousel';
+import Seo from '../components/Seo/Seo';
+import JsonLd from '../components/Seo/JsonLd';
+import StaticCarousel from '../components/StaticSections/StaticComponent';
+import FeaturesSection from '../components/StaticSections/FeaturesSection';
+import Testimonials from '../components/Testimonials/Testimonial';
+import { AboutFakiraFab } from '../components/AboutFakiraFab';
+
+
+
+const slides : string[] = [
+  "Fast Track Shipping",
+  "Smooth exchange process",
+  "We only accept online payments", 
+  "We deliver all over India"
+]
+
+
+const sampleImages = [
+
+
+    {
+        _id: '1',
+        image: 'https://res.cloudinary.com/dtst7rqhw/image/upload/v1758265781/6226250966609545669_fyv5xp.jpg',
+        title: 'Sample Image 1',
+        ctaText: 'Shop Now',
+        ctaLink: '/new-arrivals',
+    },
+    {
+        _id: '2',
+        image: 'https://res.cloudinary.com/dtst7rqhw/image/upload/v1758265776/6226250966609545684_jfzhvs.jpg',
+        title: 'Sample Image 2',
+        ctaText: 'Explore',
+        ctaLink: '/new-arrivals',
+    },
+    {
+        _id: '3',
+        image: 'https://res.cloudinary.com/dtst7rqhw/image/upload/v1758265764/6226250966609545687_r7bw2p.jpg',
+        title: 'Sample Image 3',
+        ctaText: 'Learn More',
+        ctaLink: '/workshops',
+    },
+   
+  ];
 
 // Fetch categories
 const fetchCategories = async ():Promise<Category[]> => {
@@ -89,7 +134,7 @@ const HomePage: React.FC = () => {
 
   // Find specific categories for dynamic data
   const fabricCategory = categoriesData.find(cat => 
-    cat.name.includes('dupattas') || 
+    cat.name.includes('Unstitch Fabrics') || 
     cat.name.toLowerCase().includes('textile')
   );
 //  console.log('Categories Data:', categoriesData);
@@ -151,6 +196,7 @@ const HomePage: React.FC = () => {
     __v: product.__v,
     images: product.images,
     variants: product.variants,
+    unit: product.unit,
     specifications: product.specifications,
     fullDescription: product.fullDescription,
     material: product.material,
@@ -176,6 +222,7 @@ const HomePage: React.FC = () => {
     __v: product.__v,
     images: product.images,
     variants: product.variants,
+    unit: product.unit,
     specifications: product.specifications,
     fullDescription: product.fullDescription,
     material: product.material,
@@ -202,6 +249,7 @@ const HomePage: React.FC = () => {
     images: product.images,
     variants: product.variants,
     specifications: product.specifications,
+    unit: product.unit,
     fullDescription: product.fullDescription,
     material: product.material,
     style: product.style,
@@ -220,7 +268,45 @@ const HomePage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white px-4 sm:px-6 md:px-8 lg:px-12">
+    <div className="min-h-screen mt-5 bg-white px-4 sm:px-6 md:px-8 lg:px-12">
+      <Seo
+        title="Fakira Fab | Premium Hand Block Printed Fabrics, Sarees & Men's Wear"
+        description="Discover authentic hand-block-printed sarees, unstitched fabrics, suit pieces, dupattas, bedsheets, and men's clothing at Fakira Fab—premium quality, timeless designs, handcrafted with love."
+        image={bannersData?.[0]?.imageDesktop || sampleImages[0].image}
+        imageAlt="Fakira Fab - Premium Hand Block Printed Fabrics & Sarees"
+        keywords="best place to buy hand-block-printed materials, hand-block-printed fabric manufacturers India, handblock printed saree online, hand-block-printed cotton dress material, block print dupatta online shopping, traditional Indian block print clothing"
+        url="https://www.fakirafab.com/"
+      />
+      <JsonLd
+        data={[
+          {
+            "@context": "https://schema.org",
+            "@type": "Organization",
+            "name": "Fakira FAB",
+            "url": "https://www.fakirafab.com",
+            "logo": "https://www.fakirafab.com/logo.png",
+            "description": "Discover authentic hand-block-printed sarees, unstitched fabrics, suit pieces, dupattas, bedsheets, and men's clothing at Fakira Fab—premium quality, timeless designs, handcrafted with love.",
+            "sameAs": [
+              "https://www.instagram.com/fakirafab",
+              "https://www.facebook.com/fakirafab"
+            ]
+          },
+          {
+            "@context": "https://schema.org",
+            "@type": "WebSite",
+            "name": "Fakira FAB",
+            "url": "https://www.fakirafab.com",
+            "potentialAction": {
+              "@type": "SearchAction",
+              "target": {
+                "@type": "EntryPoint",
+                "urlTemplate": "https://www.fakirafab.com/all-products?q={search_term_string}"
+              },
+              "query-input": "required name=search_term_string"
+            }
+          }
+        ]}
+      />
       {/* Carousel Section */}
       {bannersLoading ? (
         <div className="relative w-full h-[50vh] sm:h-[60vh] md:h-[80vh] lg:h-[90vh] overflow-hidden">
@@ -234,14 +320,17 @@ const HomePage: React.FC = () => {
       {reelsLoading ? (
         <div className="py-16 bg-white">
           <div className="container mx-auto px-4">
-            <div className="flex items-center justify-between mb-8">
+            {/* <div className="flex items-center justify-between mb-8">
               <h2 className="text-3xl font-bold text-gray-900">Featured Reels</h2>
-            </div>
+            </div> */}
             <ReelsGridSkeleton />
           </div>
         </div>
       ) : (
-        <InstagramReels reels={reelsData as Reel[]} title="Featured Reels" />
+        <div className='mt-12 mb-12  bg-gray-50'>
+          <InstagramReels reels={reelsData} />
+        </div>
+        
       )}
 
       {/* New Arrivals Section */}
@@ -258,6 +347,8 @@ const HomePage: React.FC = () => {
         <NewArrivals products={mappedNewArrivals} />
       )}
 
+      
+
       {/* Categories Section */}
       {categoriesLoading ? (
         <div className="py-16 bg-white">
@@ -269,27 +360,57 @@ const HomePage: React.FC = () => {
           </div>
         </div>
       ) : (
-        <CategoriesGrid categories={mappedCategories} />
+
+        <div className='mt-12 mb-12  bg-gray-50'>
+          <CategoriesGrid categories={mappedCategories} />
+        </div>
+        
       )}
+
+    <TouchFeelCreateHero/>
+
 
       {/* Fabric Collections Section */}
       {fabricLoading ? (
         <div className="py-16 bg-gray-50">
           <div className="container mx-auto px-4">
             <div className="text-center mb-8">
-              <h2 className="text-3xl font-bold text-gray-900">Fabric Collections</h2>
+              <h2 className="text-3xl font-bold text-gray-900">Unstich Fabric Collections</h2>
             </div>
             <ProductGridSkeleton count={4} />
           </div>
         </div>
       ) : fabricCategory && mappedFabricProducts.length > 0 ? (
-        <ProductsByCategory
+        <div className='mt-12 mb-12 flex justify-center bg-gray-50'>
+          <ProductsByCategory
           title={fabricCategory.name}
           products={mappedFabricProducts}
           filters={['Hand block print', 'Dabu kantha', 'Mul Mul Fabric']}
           onViewAll={() => handleViewAll(fabricCategory._id)}
         />
+
+        </div>
       ) : null}
+
+      
+      
+
+      
+      
+
+
+      {/* 
+        Fix: The 'slides' prop type for AutoCarousel expects 'never[]', but 'slides' is 'string[]'.
+        Solution: If AutoCarousel is meant to accept string[] (e.g., image URLs), update its prop type.
+        If not, and you want to avoid the error for now, cast as 'any' or fix the prop type in AutoCarousel.
+        Here, we cast as 'any[]' to resolve the type error.
+      */}
+      <AutoCarousel
+        slides={slides as []}
+      />
+      
+
+      
 
       {/* Dupattas Section */}
       {dupattaLoading ? (
@@ -302,19 +423,55 @@ const HomePage: React.FC = () => {
           </div>
         </div>
       ) : dupattaCategory && mappedDupattaProducts.length > 0 ? (
-        <ProductsByCategory
+        <div className='mt-12 mb-12 flex justify-center bg-gray-50'>
+          <ProductsByCategory
           title={dupattaCategory.name}
           products={mappedDupattaProducts}
           filters={['Ajrakh', 'Dabu kantha', 'Mul Mul Fabric']}
           onViewAll={() => handleViewAll(dupattaCategory._id)}
         />
+        </div>
+
+        
       ) : null}
+
+
+
+      <div className='mt-12 mb-12 flex justify-center'>
+          <StaticCarousel  banners={sampleImages}/>
+      </div>
+
+     
+
+      
+      {/* Static Floral Pattern Section */}
+      <IndigoPatternSection/>
+
+      {/* Static Best Seller Section */}
+      {/* <BestSellerSection /> */}
+
 
       {/* Workshop Section */}
       <WorkshopSection onRegisterClick={handleWorkshopRegister} />
 
+      {/* Features Section */}
+      <div className='mt-12 mb-12 flex justify-center bg-gray-50'>
+        <FeaturesSection/>
+      </div>
+
+      <div className='mt-12 mb-12 flex justify-center bg-gray-50'>
+      <Testimonials/>
+      </div>
+
+      {/* About Fakira Fab Section */}
+      <AboutFakiraFab />
+
+      
+
+      
+
       {/* Support Artisans Section */}
-      <SupportArtisans />
+      {/* <SupportArtisans /> */}
     </div>
   );
 };

@@ -61,7 +61,7 @@ const FilterTabs: React.FC<FilterTabsProps> = ({ categoryId, selectedType, onSel
           <div className="mt-3 flex items-center gap-2">
             <div className="w-2 h-2 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full animate-pulse"></div>
             <span className="text-xs text-gray-600">
-              Currently showing: <span className="font-medium text-purple-600">{selectedType}</span>
+              Currently showing: <span className="font-medium text-[#7F1416]">{selectedType}</span>
             </span>
             <button 
               onClick={() => onSelect('All')}

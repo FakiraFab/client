@@ -1,22 +1,32 @@
+
 import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import ProductCard from '../components/ProductCard';
-import { useQuery } from '@tanstack/react-query';
+import { useInfiniteQuery } from '@tanstack/react-query';
 import apiClient from '../api/client';
-import type { ApiResponse, Product } from '../types';
+import type { Product } from '../types';
 import FilterTabs from '../components/FilterTabs/FilterTabs';
+import { FaqSection } from '../components/StaticSections';
+import Seo from '../components/Seo/Seo';
+import JsonLd from '../components/Seo/JsonLd';
 
-// Extended ApiResponse type to include categoryImage
-interface CategoryApiResponse<T> extends ApiResponse<T> {
-  categoryImage?: string;
-  categoryName?: string;
-}
+const fetchProductsByCategory = async ({
+  pageParam = 1,
+  queryKey,
+}: {
+  pageParam?: number;
+  queryKey: (string | undefined)[];
+}) => {
+  const [, categoryId, type] = queryKey as [string, string | undefined, string];
+  if (!categoryId) return { 
+    success: true, 
+    data: [], 
+    filters: { subCategories: [] }, 
+    pagination: { total: 0, page: 1, pages: 1 } 
+  };
 
-const fetchProductsByCategory = async (categoryId: string | undefined, type: string): Promise<CategoryApiResponse<Product[]>> => {
-  if (!categoryId) return { success: true, data: [], filters: { subCategories: [] }, pagination: { total: 0, page: 1, pages: 1 } };
   const query = type === 'All' ? '' : `&subcategory=${type}`;
-  const res = await apiClient.get(`/products?category=${categoryId}${query}`);
-  console.log(res.data);
+  const res = await apiClient.get(`/products?category=${categoryId}${query}&page=${pageParam}&limit=12`);
   return res.data;
 };
 
@@ -27,11 +37,47 @@ const CategoryPage: React.FC = () => {
   const [imageError, setImageError] = useState<boolean>(false);
   const [isFiltering, setIsFiltering] = useState<boolean>(false);
 
-  const { data = { success: true, data: [], filters: { subCategories: [] }, pagination: { total: 0, page: 1, pages: 1 } }, isLoading, error } = useQuery({
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading,
+    error
+  } = useInfiniteQuery({
     queryKey: ['products', categoryId, selectedType],
-    queryFn: () => fetchProductsByCategory(categoryId, selectedType),
+    queryFn: fetchProductsByCategory,
+    getNextPageParam: (lastPage) => {
+      if (!lastPage.pagination) return undefined;
+      return lastPage.pagination.page < lastPage.pagination.pages ? lastPage.pagination.page + 1 : undefined;
+    },
     enabled: !!categoryId,
+    initialPageParam: 1,
   });
+
+  // Intersection Observer for infinite scroll
+  const observerTarget = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+          fetchNextPage();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (observerTarget.current) {
+      observer.observe(observerTarget.current);
+    }
+
+    return () => {
+      if (observerTarget.current) {
+        observer.unobserve(observerTarget.current);
+      }
+    };
+  }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
 
   // Handle filter changes with loading state
   const handleFilterChange = (newType: string) => {
@@ -43,9 +89,9 @@ const CategoryPage: React.FC = () => {
 
   // Sort products based on selected sort option
   const sortedProducts = React.useMemo(() => {
-    if (!data.data) return [];
+    if (!data?.pages) return [];
     
-    const products = [...data.data];
+    const products = data.pages.flatMap(page => page.data);
     
     switch (sortBy) {
       case 'Price: Low to High':
@@ -55,35 +101,98 @@ const CategoryPage: React.FC = () => {
       case 'Newest':
         return products.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
       case 'Best Selling':
-        // For now, we'll sort by quantity (assuming higher quantity means more popular)
         return products.sort((a, b) => b.quantity - a.quantity);
       case 'Featured':
       default:
-        return products; // Keep original order
+        return products;
     }
-  }, [data.data, sortBy]);
+  }, [data?.pages, sortBy]);
 
-  const displayCategoryName = data.data[0]?.category?.name || categoryId?.replace(/-/g, ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
-  
+
+  const displayDescription = data?.pages[0]?.category?.description || 
+    `Explore our exclusive collection of premium ${categoryId?.replace(/-/g, ' ').toLowerCase()} designed to elevate your style and comfort.`;
+
+  const displayCategoryName = data?.pages[0]?.category?.name || 
+    categoryId?.replace(/-/g, ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+  const categoryBannerImage = data?.pages[0]?.category?.categoryBannerImage || 
+    "https://www.fabvoguestudio.com/cdn/shop/collections/co-fresh-designs.jpg?v=1742118562&width=1950";
+
+  // SEO values
+  const canonicalUrl = `https://www.fakirafab.com/category/${categoryId || ''}`;
+  const pageTitle = `${displayCategoryName} | Handmade ${displayCategoryName} Online | Fakira FAB`;
+  const pageDesc = displayDescription;
+  const ogImage = categoryBannerImage;
+  const keywords = `handmade ${displayCategoryName}, ${displayCategoryName} online, block print, artisan, women clothing, Fakira FAB, premium textiles`;
+
+  // JSON-LD schemas
+  const jsonLdSchemas = [
+    {
+      "@context": "https://schema.org",
+      "@type": "CollectionPage",
+      "name": displayCategoryName,
+      "description": pageDesc,
+      "url": canonicalUrl,
+      "image": ogImage,
+      "keywords": keywords,
+      "publisher": {
+        "@type": "Organization",
+        "name": "Fakira FAB",
+        "url": "https://www.fakirafab.com/",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://www.fakirafab.com/logo.png"
+        }
+      }
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://www.fakirafab.com/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": displayCategoryName,
+          "item": canonicalUrl
+        }
+      ]
+    }
+  ];
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
+      <Seo
+        title={pageTitle}
+        description={pageDesc}
+        url={canonicalUrl}
+        image={ogImage}
+        type="website"
+        keywords={keywords}
+        imageAlt={`Handmade ${displayCategoryName} at Fakira FAB`}
+      />
+      <JsonLd data={jsonLdSchemas} />
       {/* Hero Header Section */}
       <div className="relative h-64 sm:h-80 lg:h-96 overflow-hidden">
         {/* Category Background Image */}
-        {data?.imageUrl && !imageError ? (
+        {!imageError ? (
           <img 
-            src={data.imageUrl} 
+            src={categoryBannerImage} 
             alt={displayCategoryName}
             className="absolute inset-0 w-full h-full object-cover transition-opacity duration-500"
             onError={() => setImageError(true)}
             onLoad={() => setImageError(false)}
           />
         ) : (
-          <div className="absolute inset-0 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900">
-            {/* Decorative elements for fallback */}
-            <div className="absolute top-0 left-1/4 w-96 h-96 bg-gradient-to-br from-purple-400/20 to-pink-400/20 rounded-full blur-3xl transform -translate-y-1/2"></div>
-            <div className="absolute bottom-0 right-1/4 w-80 h-80 bg-gradient-to-br from-blue-400/20 to-cyan-400/20 rounded-full blur-3xl transform translate-y-1/2"></div>
-          </div>
+          <img 
+            src="https://www.fabvoguestudio.com/cdn/shop/collections/co-fresh-designs.jpg?v=1742118562&width=1950" 
+            alt="Category Background"
+            className="absolute inset-0 w-full h-full object-cover"
+          />
         )}
         
         {/* Overlay for text readability */}
@@ -96,10 +205,10 @@ const CategoryPage: React.FC = () => {
               {displayCategoryName}
             </h1>
             <p className="text-lg sm:text-xl text-gray-300 max-w-2xl mx-auto leading-relaxed">
-              Discover our curated collection of premium {displayCategoryName?.toLowerCase()} designed for the modern lifestyle
+              {displayDescription}
             </p>
             <div className="mt-8 flex justify-center">
-              <div className="w-24 h-1 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full"></div>
+              <div className="w-40 h-1 bg-white rounded-full"></div>
             </div>
           </div>
         </div>
@@ -112,7 +221,7 @@ const CategoryPage: React.FC = () => {
             categoryId={categoryId} 
             selectedType={selectedType} 
             onSelect={handleFilterChange} 
-            subCategories={data.filters?.subCategories || []} 
+            subCategories={data?.pages[0]?.filters?.subCategories || []} 
           />
         </div>
       </div>
@@ -122,7 +231,7 @@ const CategoryPage: React.FC = () => {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="text-center mb-8">
             <div className="inline-flex items-center gap-2 text-gray-600">
-              <div className="w-4 h-4 border-2 border-purple-600 border-t-transparent rounded-full animate-spin"></div>
+              <div className="w-4 h-4 border-2 border-[#7F1416] border-t-transparent rounded-full animate-spin"></div>
               <span>{isFiltering ? 'Applying filters...' : 'Loading products...'}</span>
             </div>
           </div>
@@ -219,14 +328,14 @@ const CategoryPage: React.FC = () => {
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
                 <button 
                   onClick={() => handleFilterChange('All')}
-                  className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-medium rounded-xl hover:from-purple-700 hover:to-pink-700 transition-all duration-200 transform hover:scale-105"
+                  className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-[#7F1416] to-[#7F1416] text-white font-medium rounded-xl hover:from-[#7F1416] hover:to-[#7F1416] transition-all duration-200 transform hover:scale-105"
                 >
                   View All Products
                 </button>
                 {selectedType !== 'All' && (
                   <button 
                     onClick={() => handleFilterChange('All')}
-                    className="inline-flex items-center px-6 py-3 bg-white border-2 border-gray-200 text-gray-700 font-medium rounded-xl hover:border-purple-300 hover:text-purple-600 transition-all duration-200"
+                    className="inline-flex items-center px-6 py-3 bg-white border-2 border-gray-200 text-gray-700 font-medium rounded-xl hover:border-[#7F1416] hover:text-[#7F1416] transition-all duration-200"
                   >
                     Clear Filters
                   </button>
@@ -254,41 +363,20 @@ const CategoryPage: React.FC = () => {
           </div>
         )}
 
-        {/* Load More Section */}
-        {!isLoading && !isFiltering && !error && sortedProducts && sortedProducts.length > 0 && (
-          <div className="mt-12 sm:mt-16 text-center">
-            <button className="inline-flex items-center px-8 py-4 bg-white border-2 border-gray-200 text-gray-700 font-medium rounded-xl hover:border-purple-300 hover:text-purple-600 transition-all duration-200 shadow-sm hover:shadow-md">
-              <span>Load More Products</span>
-              <svg className="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-              </svg>
-            </button>
-          </div>
-        )}
-      </div>
-
-      {/* Newsletter Section */}
-      <div className="bg-gradient-to-r from-slate-900 to-slate-800 mt-16">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
-          <div className="text-center max-w-2xl mx-auto">
-            <h3 className="text-2xl sm:text-3xl font-bold text-white mb-4">
-              Stay In Style
-            </h3>
-            <p className="text-gray-300 mb-8">
-              Get the latest trends, exclusive offers, and style inspiration delivered to your inbox.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
-              <input 
-                type="email" 
-                placeholder="Enter your email"
-                className="flex-1 px-4 py-3 rounded-xl border-0 focus:outline-none focus:ring-2 focus:ring-purple-400"
-              />
-              <button className="px-6 py-3 bg-[#7F1416] from-red-900 to-red-800 text-white font-medium rounded-xl hover:from-purple-700 hover:to-pink-700 transition-all duration-200">
-                Subscribe
-              </button>
+        {/* Infinite Scroll Loading Indicator */}
+        {!error && (hasNextPage || isFetchingNextPage) && (
+          <div 
+            ref={observerTarget}
+            className="mt-8 sm:mt-12 text-center p-4"
+          >
+            <div className="inline-flex items-center gap-2 text-gray-600">
+              <div className="w-4 h-4 border-2 border-[#7F1416] border-t-transparent rounded-full animate-spin"></div>
+              <span>{isFetchingNextPage ? 'Loading more products...' : 'Load more products'}</span>
             </div>
           </div>
-        </div>
+        )}
+        {/* FAQ Section (end of category content) */}
+        <FaqSection />
       </div>
 
       <style>{`

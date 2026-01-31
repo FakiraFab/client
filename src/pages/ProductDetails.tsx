@@ -2,13 +2,22 @@ import React, { useState, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import apiClient from '../api/client';
+import ProductCard from '../components/ProductCard';
 import type { Product, ApiResponse, Enquiry } from '../types';
 import EnquiryForm from '../../src/components/EnquiryForm/EnquiryForm';
+import { useCart } from '../context/CartContext';
+import { useToast } from '../context/ToastContext';
+// import ProductInfoTabs from '../components/ProductInfoTabs/ProductInfoTabs';
+import KnowYourGarment from '../components/KnowYourGarment/KnowYourGarment';
+import ModernProductSpecs from '../components/ModernProductSpecs/ModernProductSpecs';
+import Seo from '../components/Seo/Seo';
+import JsonLd from '../components/Seo/JsonLd';
+
 
 const fetchProductDetails = async (productId: string | undefined): Promise<ApiResponse<Product>> => {
   if (!productId) throw new Error('Product ID is required');
   const res = await apiClient.get(`/products/${productId}`);
-  console.log(res.data);
+  // console.log(res.data);
   return res.data;
 };
 
@@ -27,6 +36,8 @@ const ProductDetailsPage: React.FC = () => {
   const [isEnquiryFormOpen, setIsEnquiryFormOpen] = useState(false);
   const [enquiryStatus, setEnquiryStatus] = useState<{ success: boolean; message: string } | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { addToCart } = useCart();
+  const { showToast } = useToast();
 
   const { data: productData, isLoading, error } = useQuery({
     queryKey: ['product', productId],
@@ -35,6 +46,7 @@ const ProductDetailsPage: React.FC = () => {
   });
 
   const product = productData?.data || null;
+  // console.log('Product Data:', product);
   const categoryId = product?.category?._id;
 
   const { data: relatedProductsData } = useQuery({
@@ -50,7 +62,7 @@ const ProductDetailsPage: React.FC = () => {
       if (selectedVariant >= 0 && product.variants && product.variants[selectedVariant]) {
         // Show variant images when a variant is selected
         const variant = product.variants[selectedVariant];
-        console.log('variant', variant);
+        //console.log('variant', variant);
         if (variant && variant.images && variant.images.length > 0) {
           setCurrentImages(variant.images);
         } else {
@@ -105,22 +117,22 @@ const ProductDetailsPage: React.FC = () => {
     return Math.round(currentPrice * 1.2);
   };
 
-  const getSavings = () => {
-    return getOriginalPrice() - getCurrentPrice();
-  };
+  // const getSavings = () => {
+  //   return getOriginalPrice() - getCurrentPrice();
+  // };
 
-  const getCurrentQuantity = () => {
-    if (selectedVariant >= 0 && product?.variants && product.variants[selectedVariant]) {
-      return product.variants[selectedVariant].quantity;
-    }
-    return product?.quantity || 0;
-  };
+  // const getCurrentQuantity = () => {
+  //   if (selectedVariant >= 0 && product?.variants && product.variants[selectedVariant]) {
+  //     return product.variants[selectedVariant].quantity;
+  //   }
+  //   return product?.quantity || 0;
+  // };
 
   const getCurrentColor = () => {
     if (selectedVariant >= 0 && product?.variants && product.variants[selectedVariant]) {
       return product.variants[selectedVariant].color;
     }
-    return product?.specifications?.color || 'Default';
+    return product?.color || 'Default';
   };
 
   const openEnquiryForm = () => {
@@ -131,6 +143,20 @@ const ProductDetailsPage: React.FC = () => {
   const closeEnquiryForm = () => {
     setIsEnquiryFormOpen(false);
     setEnquiryStatus(null); // Reset status when closing form
+  };
+
+  const handleAddToCart = () => {
+    if (!product) return;
+    
+    addToCart(product, quantity, selectedVariant >= 0 ? selectedVariant : undefined, getCurrentColor());
+    
+    // Show success toast
+    showToast({
+      type: 'success',
+      title: 'Added to Cart!',
+      message: `${product.name} has been added to your cart.`,
+      duration: 3000
+    });
   };
 
   const handleEnquirySubmit = async (enquiry: Enquiry) => {
@@ -146,6 +172,58 @@ const ProductDetailsPage: React.FC = () => {
       setEnquiryStatus({ success: false, message: 'An error occurred. Please try again later.' });
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleShareProduct = async () => {
+    // Check if Web Share API is supported
+    if (navigator.share) {
+      try {
+        const shareData: ShareData = {
+          title: product?.name,
+          text: `Check out ${product?.name} at Fakira FAB - Hand-block printed artisan fabrics`,
+          url: typeof window !== 'undefined' ? window.location.href : '',
+        };
+
+        // Add image if Web Share API supports files
+        const imageUrl = currentImages[selectedImage] || product?.imageUrl;
+        if (navigator.canShare && imageUrl) {
+          try {
+            const response = await fetch(imageUrl);
+            const blob = await response.blob();
+            const file = new File([blob], 'product-image.jpg', { type: 'image/jpeg' });
+            
+            if (navigator.canShare({ files: [file] })) {
+              shareData.files = [file];
+            }
+          } catch (err) {
+            // If image fetch fails, continue without image
+            console.log('Could not attach image to share');
+          }
+        }
+
+        await navigator.share(shareData);
+      } catch (err: any) {
+        // User cancelled the share dialog
+        if (err.name !== 'AbortError') {
+          console.error('Error sharing:', err);
+        }
+      }
+    } else {
+      // Fallback for browsers that don't support Web Share API
+      // Copy to clipboard
+      const shareText = `Check out ${product?.name} at Fakira FAB\n${typeof window !== 'undefined' ? window.location.href : ''}`;
+      try {
+        await navigator.clipboard.writeText(shareText);
+        showToast({
+          type: 'success',
+          title: 'Link Copied!',
+          message: 'Product link copied to clipboard',
+          duration: 3000
+        });
+      } catch (err) {
+        console.error('Failed to copy:', err);
+      }
     }
   };
 
@@ -175,6 +253,33 @@ const ProductDetailsPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {product && (
+        <>
+          <Seo
+            title={`${product.name} — Fakira FAB`}
+            description={product.description || product.fullDescription || `Buy ${product.name} at Fakira FAB`}
+            image={product.images?.[0] || product.imageUrl}
+            type="product"
+          />
+          <JsonLd
+            data={{
+              "@context": "https://schema.org",
+              "@type": "Product",
+              "name": product.name,
+              "image": product.images || [product.imageUrl],
+              "description": product.description || product.fullDescription,
+              "sku": product._id,
+              "offers": {
+                "@type": "Offer",
+                "priceCurrency": "INR",
+                "price": product.price?.toString() || '0',
+                "availability": product.quantity && product.quantity > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+                "url": typeof window !== 'undefined' ? window.location.href : ''
+              }
+            }}
+          />
+        </>
+      )}
       {/* Success/Error Toast */}
       {enquiryStatus && (
         <div className={`fixed top-4 right-4 p-4 rounded-md text-white ${enquiryStatus.success ? 'bg-green-600' : 'bg-red-600'}`}>
@@ -188,14 +293,14 @@ const ProductDetailsPage: React.FC = () => {
         </div>
       )}
 
-      {/* Breadcrumb */}
+       {/* Breadcrumb */}
       <div className="bg-white py-4 border-b">
         <div className="container mx-auto px-6">
           <nav className="text-sm text-gray-600">
             <Link to="/" className="hover:text-red-600">Home</Link>
             <span className="mx-2">/</span>
-            <Link to={`/category/${product.category.name}`} className="hover:text-red-600">
-              {product.category.name}
+            <Link to={`/category/${product.category?.name ?? ''}`} className="hover:text-[#7F1416]">
+              {product.category?.name ?? ''}
             </Link>
             <span className="mx-2">/</span>
             <span className="text-gray-900">{product.name}</span>
@@ -204,283 +309,337 @@ const ProductDetailsPage: React.FC = () => {
       </div>
 
       {/* Product Details */}
-      <div className="container mx-auto px-6 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-        
+      <div className="container mx-auto px-4 lg:px-6 py-6 lg:py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 lg:auto-cols-fr">
+          {/* Product Images - Column 1 */}
+          <div className="lg:col-span-6">
+            {/* Desktop Layout - Thumbnail Strip + Main Image */}
+            <div className="hidden lg:flex lg:flex-col lg:gap-4 lg:h-auto">
+              {/* Thumbnails and Images Container */}
+              <div className="flex gap-4 flex-1">
+                {/* Thumbnail Strip - Left Side */}
+                <div className="flex flex-col gap-3 w-24 flex-shrink-0">
+                  {currentImages.map((image, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setSelectedImage(index)}
+                      className={`w-24 h-24 rounded-lg border-2 overflow-hidden flex-shrink-0 ${
+                        selectedImage === index ? 'border-red-600' : 'border-gray-200'
+                      }`}
+                    >
+                      <img
+                        src={image || 'https://via.placeholder.com/96'}
+                        alt={`${product.name} ${index + 1}`}
+                        className="w-full h-full object-contain"
+                      />
+                    </button>
+                  ))}
+                </div>
 
+                {/* Main Image - Right Side */}
+                <div className="flex-1 flex flex-col gap-4">
+                  <div className="flex-1 rounded-xl overflow-hidden border border-gray-200 shadow-sm">
+                    <img
+                      src={currentImages[selectedImage] || product.imageUrl || 'https://via.placeholder.com/400'}
+                      alt={product.name}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
 
-
-
-{/* Product Images */}
-<div>
-  {/* Desktop Layout - Thumbnail Strip + Main Image */}
-  <div className="hidden lg:flex gap-4">
-    {/* Thumbnail Strip - Left Side */}
-    <div className="flex flex-col gap-3 w-20">
-      {currentImages.map((image, index) => (
-        <button
-          key={index}
-          onClick={() => setSelectedImage(index)}
-          className={`w-20 h-20 rounded-lg border-2 overflow-hidden flex-shrink-0 ${
-            selectedImage === index ? 'border-red-600' : 'border-gray-200'
-          }`}
-        >
-          <img
-            src={image || 'https://via.placeholder.com/80'}
-            alt={`${product.name} ${index + 1}`}
-            className="w-full h-full object-contain"
-          />
-        </button>
-      ))}
-    </div>
-
-    {/* Main Image - Right Side */}
-    <div className="flex-1">
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-        <img
-          src={currentImages[selectedImage] || product.imageUrl || 'https://via.placeholder.com/400'}
-          alt={product.name}
-          className="w-full h-full object-contain"
-        />
-      </div>
-    </div>
-  </div>
-
-  {/* Mobile Layout - Autoplay Carousel */}
-  <div className="lg:hidden">
-    <div className="relative bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-      <img
-        src={currentImages[selectedImage] || product.imageUrl || 'https://via.placeholder.com/400'}
-        alt={product.name}
-        className="w-full h-80 object-contain"
-      />
-      
-      {/* Carousel Indicators */}
-      {currentImages.length > 1 && (
-        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
-          {currentImages.map((_, index) => (
-            <button
-              key={index}
-              onClick={() => setSelectedImage(index)}
-              className={`w-2 h-2 rounded-full transition-colors ${
-                selectedImage === index ? 'bg-white' : 'bg-white/50'
-              }`}
-            />
-          ))}
-        </div>
-      )}
-
-      {/* Image Counter */}
-      {currentImages.length > 1 && (
-        <div className="absolute top-4 right-4 bg-black/60 text-white px-2 py-1 rounded-full text-xs">
-          {selectedImage + 1} / {currentImages.length}
-        </div>
-      )}
-    </div>
-
-    {/* Mobile Thumbnail Strip (Optional - for manual navigation) */}
-    {currentImages.length > 1 && (
-      <div className="flex space-x-2 mt-4 overflow-x-auto pb-2">
-        {currentImages.map((image, index) => (
-          <button
-            key={index}
-            onClick={() => setSelectedImage(index)}
-            className={`flex-shrink-0 w-16 h-16 rounded-lg border-2 overflow-hidden ${
-              selectedImage === index ? 'border-red-600' : 'border-gray-200'
-            }`}
-          >
-            <img
-              src={image || 'https://via.placeholder.com/64'}
-              alt={`${product.name} ${index + 1}`}
-              className="w-full h-full object-contain"
-            />
-          </button>
-        ))}
-      </div>
-    )}
-  </div>
-</div>         
-
-          {/* Product Info */}
-          <div className="space-y-6">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">{product.name}</h1>
-              <div className="flex items-center space-x-4">
-                <span className="text-3xl font-bold text-red-600">
-                  Rs. {getCurrentPrice().toLocaleString()}
-                </span>
-                <span className="text-gray-500 line-through">
-                  Rs. {getOriginalPrice().toLocaleString()}
-                </span>
+                  {/* Secondary Image - Only on desktop if available */}
+                  {currentImages[1] && (
+                    <div className="rounded-xl overflow-hidden border border-gray-200 shadow-sm hidden lg:block">
+                      <img
+                        src={currentImages[1]}
+                        alt={`${product.name} alternate`}
+                        className="w-full lg:h-[250px] object-cover"
+                      />
+                    </div>
+                  )}
+                </div>
               </div>
-              <div className="flex items-center justify-between mt-2">
-                <p className="text-sm text-gray-600">
-                  Quantity left: {getCurrentQuantity()} Meters
-                </p>
-                <p className="text-sm font-medium text-green-600">
-                  Save ₹{getSavings().toLocaleString()}
-                </p>
-              </div>
-              <p className="text-sm text-red-600 mt-1 font-medium">Limited period offer</p>
             </div>
 
-            {product.variants && product.variants.length > 0 && (
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">Color Options</h3>
-                <div className="flex flex-wrap gap-3">
-                  {/* Default/Primary Product Option */}
+            {/* Mobile Layout - Autoplay Carousel */}
+            <div className="lg:hidden">
+              <div className="relative overflow-hidden">
+                <img
+                  src={currentImages[selectedImage] || product.imageUrl || 'https://via.placeholder.com/400'}
+                  alt={product.name}
+                  className="w-full h-80 object-cover"
+                />
+                
+                {/* Carousel Indicators */}
+                {currentImages.length > 1 && (
+                  <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
+                    {currentImages.map((_, index) => (
+                      <button
+                        key={index}
+                        onClick={() => setSelectedImage(index)}
+                        className={`w-2 h-2 rounded-full transition-colors ${
+                          selectedImage === index ? 'bg-white' : 'bg-white/50'
+                        }`}
+                      />
+                    ))}
+                  </div>
+                )}
+
+                {/* Image Counter */}
+                {currentImages.length > 1 && (
+                  <div className="absolute top-4 right-4 bg-black/60 text-white px-2 py-1 rounded-full text-xs">
+                    {selectedImage + 1} / {currentImages.length}
+                  </div>
+                )}
+              </div>
+
+              {/* Mobile Thumbnail Strip */}
+              {currentImages.length > 1 && (
+                <div className="flex space-x-2 mt-4 overflow-x-auto pb-2">
+                  {currentImages.map((image, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setSelectedImage(index)}
+                      className={`flex-shrink-0 w-16 h-16 rounded-lg border-2 overflow-hidden ${
+                        selectedImage === index ? 'border-red-600' : 'border-gray-200'
+                      }`}
+                    >
+                      <img
+                        src={image || 'https://via.placeholder.com/64'}
+                        alt={`${product.name} ${index + 1}`}
+                        className="w-full h-full object-contain"
+                      />
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Product Info & Specs - Column 2 */}
+          <div className="lg:col-span-6 space-y-6">
+            {/* Product Title & Price */}
+            <div>
+              <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-1 leading-tight">{product.name}</h1>
+              
+              {/* Price Section */}
+              <div className="flex items-center space-x-3 mb-1">
+                <span className="text-2xl font-bold text-gray-900">
+                  Rs. {getCurrentPrice().toLocaleString()}
+                </span>
+                <span className="text-lg text-gray-500 line-through">
+                  Rs. {getOriginalPrice().toLocaleString()}
+                </span>
+                <span className="text-lg font-bold text-gray-900">
+                  {Math.round(((getOriginalPrice() - getCurrentPrice()) / getOriginalPrice()) * 100)}% OFF
+                </span>
+              </div>
+              
+              {/* Subtext with per-unit price */}
+              <p className="text-sm text-gray-600 mb-2">
+                (Rs. {Math.round(getCurrentPrice() / 1)} / {product.unit || 'meter'} Rs-{getOriginalPrice()})
+              </p>
+              
+              {/* Sale Tag */}
+              <div className="inline-block bg-gray-800 text-white px-3 py-1 rounded text-sm font-medium mb-4">
+                Black Friday Sale
+              </div>
+              
+              {/* Reviews & SKU Section */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <div className="flex text-red-700">
+                    {[...Array(5)].map((_, i) => (
+                      <span key={i} className="text-lg">★</span>
+                    ))}
+                  </div>
+                  <span className="text-sm text-gray-700">525 reviews</span>
+                </div>
+                <p className="text-sm text-gray-700 font-medium">SKU: #fakirafab{product.specifications?.designNo}</p>
+              </div>
+            </div>
+
+            {/* Feature Icons Section */}
+            <div className="flex items-center justify-start space-x-8">
+              {/* Artisan Made */}
+              <div className="flex flex-col items-center space-y-2">
+                <div className="w-16 h-16 bg-blue-900 rounded-full flex items-center justify-center">
+                  <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/>
+                  </svg>
+                </div>
+                <p className="text-xs text-center font-medium text-gray-900">Artisan<br/>Made</p>
+              </div>
+              
+              {/* Hand Block Printed */}
+              <div className="flex flex-col items-center space-y-2">
+                <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center">
+                  <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M7 14c-1.66 0-3 1.34-3 3 0 1.31.84 2.41 2 2.83V20c0 .55.45 1 1 1s1-.45 1-1v-.17c1.16-.42 2-1.52 2-2.83 0-1.66-1.34-3-3-3zm13.71-9.71L12 .29c-.39-.39-1.02-.39-1.41 0L.29 10.59c-.39.39-.39 1.02 0 1.41L11 22.71c.39.39 1.02.39 1.41 0L23.71 12c.39-.38.39-1.02 0-1.41zM5 16c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2z"/>
+                  </svg>
+                </div>
+                <p className="text-xs text-center font-medium text-gray-900">100%<br/>Hand Block<br/>Printed</p>
+              </div>
+              
+              {/* Cotton */}
+              <div className="flex flex-col items-center space-y-2">
+                <div className="w-16 h-16 bg-blue-900 rounded-full flex items-center justify-center">
+                  <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                  </svg>
+                </div>
+                <p className="text-xs text-center font-medium text-gray-900">Cotton</p>
+              </div>
+            </div>
+
+            {/* Meter Selection Section */}
+            <div>
+              <h3 className="text-base font-bold text-gray-900 mb-3">{product.unit === 'piece' ? 'Pieces' : 'Meters'}:</h3>
+              <div className="flex flex-wrap gap-3">
+                {(product.unit === 'piece' ? [1, 2, 5, 10] : [1, 2.5, 5, 10]).map((qty) => (
                   <button
-                    onClick={() => setSelectedVariant(-1)}
-                    className={`px-3 py-2 text-sm border-2 rounded-lg ${
-                      selectedVariant === -1 ? 'border-red-600 bg-red-50 text-red-600' : 'border-gray-300'
+                    key={qty}
+                    onClick={() => handleQuickQuantitySelect(qty)}
+                    className={`w-12 h-12 rounded-lg border-2 font-semibold text-sm flex items-center justify-center transition-all ${
+                      quantity === qty
+                        ? 'bg-[#7F1416] text-white border-[#7F1416]'
+                        : 'bg-white text-gray-900 border-gray-300 hover:border-[#7F1416]'
                     }`}
                   >
-                    Default
+                    {qty}
                   </button>
-                  
+                ))}
+              </div>
+            </div>
+
+            {/* Available Colors Section */}
+            {product.variants && product.variants.length > 0 && (
+              <div>
+                <h3 className="text-sm font-bold text-gray-900 mb-3">Available Colors</h3>
+                <div className="flex flex-wrap gap-3">
+                  {/* Default product option */}
+                  <button
+                    onClick={() => handleVariantSelect(-1)}
+                    className={`w-12 h-12 rounded-full flex items-center justify-center transition-all ${
+                      selectedVariant === -1 
+                        ? 'ring-3 ring-offset-2 ring-gray-900' 
+                        : 'ring-2 ring-gray-300'
+                    }`}
+                    style={{ backgroundColor: product.color?.toLowerCase() }}
+                    title={product.color}
+                  >
+                    {selectedVariant === -1 && (
+                      <span className="text-white text-lg font-bold">✓</span>
+                    )}
+                  </button>
+                  {/* Variant options */}
                   {product.variants.map((variant, index) => (
                     <button
-                      key={variant.id}
+                      key={index}
                       onClick={() => handleVariantSelect(index)}
-                      className={`w-12 h-12 rounded-lg border-2 relative ${
-                        selectedVariant === index ? 'border-red-600' : 'border-gray-200'
+                      className={`w-12 h-12 rounded-full flex items-center justify-center transition-all ${
+                        selectedVariant === index 
+                          ? 'ring-3 ring-offset-2 ring-gray-900' 
+                          : 'ring-2 ring-gray-300'
                       }`}
-                      style={{ backgroundColor: variant.colorCode }}
+                      style={{ backgroundColor: variant.color?.toLowerCase() }}
                       title={variant.color}
                     >
-                      {variant.colorCode === '#ffffff' && (
-                        <div className="absolute inset-0 rounded-lg border border-gray-300"></div>
+                      {selectedVariant === index && (
+                        <span className="text-white text-lg font-bold">✓</span>
                       )}
                     </button>
                   ))}
                 </div>
-                <p className="text-sm text-gray-600 mt-2">
-                  Selected: {getCurrentColor()}
-                </p>
               </div>
             )}
 
+            {/* Quantity Section */}
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Quantity</h3>
-              <div className="flex items-center space-x-4 mb-4">
-                <div className="flex items-center border border-gray-300 rounded-lg">
-                  <button
-                    onClick={() => handleQuantityChange(-1)}
-                    className="px-3 py-2 hover:bg-gray-100 text-lg"
-                  >
-                    -
-                  </button>
-                  <span className="px-4 py-2 font-medium min-w-[80px] text-center">
-                    {quantity} Meter
-                  </span>
-                  <button
-                    onClick={() => handleQuantityChange(1)}
-                    className="px-3 py-2 hover:bg-gray-100 text-lg"
-                  >
-                    +
-                  </button>
-                </div>
+              <h3 className="text-base font-bold text-gray-900 mb-3">Quantity:</h3>
+              <div className="flex items-center border-2 border-gray-400 rounded-lg overflow-hidden w-fit">
+                <button
+                  onClick={() => handleQuantityChange(-1)}
+                  className="px-4 py-3 text-gray-600 hover:bg-gray-100 text-lg font-semibold"
+                >
+                  −
+                </button>
+                <span className="px-6 py-3 border-l-2 border-r-2 border-gray-400 text-lg font-semibold text-gray-900 min-w-16 text-center">{quantity}</span>
+                <button
+                  onClick={() => handleQuantityChange(1)}
+                  className="px-4 py-3 text-gray-600 hover:bg-gray-100 text-lg font-semibold"
+                >
+                  +
+                </button>
               </div>
-              <div className="flex flex-wrap gap-2">
-                {[1, 2.5, 5, 10].map((qty) => (
-                  <button
-                    key={qty}
-                    onClick={() => handleQuickQuantitySelect(qty)}
-                    className={`px-4 py-2 border rounded-lg text-sm transition-colors ${
-                      quantity === qty 
-                        ? 'border-red-600 bg-red-50 text-red-600' 
-                        : 'border-gray-300 hover:bg-gray-50'
-                    }`}
-                  >
-                    {qty} Meter{qty > 1 ? 's' : ''}
-                  </button>
-                ))}
-              </div>
-              <p className="text-sm text-gray-600 mt-2">
-                ≈ {getCurrentQuantity()} Meters in stock
-              </p>
             </div>
-
+            {/* Enquire Now Button */}
             <button 
               onClick={openEnquiryForm}
-              className="w-full bg-red-600 text-white py-3 rounded-lg font-semibold hover:bg-red-700 transition-colors"
+              className="w-full bg-white border-2 border-gray-800 text-gray-800 py-2.5 rounded-lg font-bold text-sm hover:bg-[#7F1416] hover:text-white transition-colors"
               disabled={isSubmitting}
             >
-              {isSubmitting ? 'Submitting...' : 'Enquire Now'}
+              {isSubmitting ? 'Submitting...' : 'ENQUIRE NOW'}
             </button>
-          </div>
-        </div>
 
-        {/* Product Specifications */}
-        <div className="mt-12 bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Product Specifications</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-4">
-              <div className="flex justify-between py-2 border-b border-gray-200">
-                <span className="font-medium text-gray-700">Material</span>
-                <span className="text-gray-900">{product.specifications?.material}</span>
-              </div>
-              <div className="flex justify-between py-2 border-b border-gray-200">
-                <span className="font-medium text-gray-700">Color</span>
-                <span className="text-gray-900">{getCurrentColor()}</span>
-              </div>
-              <div className="flex justify-between py-2 border-b border-gray-200">
-                <span className="font-medium text-gray-700">Style</span>
-                <span className="text-gray-900">{product.specifications?.style}</span>
-              </div>
+
+            {/* Add to Cart Button with Price */}
+            <button 
+              onClick={handleAddToCart}
+              className="w-full bg-[#7F1416] hover:bg-gray-900 text-white py-3 rounded-lg font-bold text-sm transition-colors flex items-center justify-center space-x-3"
+            >
+              <span>ADD TO CART</span>
+              <span>:</span>
+              <span>RS. {(getCurrentPrice() * quantity).toLocaleString()}</span>
+            </button>
+
+            {/* Share Button - Native Web Share API */}
+            <button
+              onClick={handleShareProduct}
+              className="w-full bg-white border-2 border-gray-800 text-gray-800 py-3 rounded-lg font-bold text-sm hover:bg-gray-100 transition-colors flex items-center justify-center space-x-2"
+            >
+              <span>
+                <svg className="w-5 h-5 inline" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.15c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.44 9.31 6.73 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.73 0 1.44-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/>
+                </svg>
+              </span>
+              <span>SHARE</span>
+            </button>
+
+            {/* Product Specs - Below all price, quantity, and buttons */}
+            <div>
+              <ModernProductSpecs product={product} getCurrentColor={getCurrentColor} />
             </div>
-            <div className="space-y-4">
-              <div className="flex justify-between py-2 border-b border-gray-200">
-                <span className="font-medium text-gray-700">Length</span>
-                <span className="text-gray-900">{product.specifications?.length}</span>
-              </div>
-              <div className="flex justify-between py-2 border-b border-gray-200">
-                <span className="font-medium text-gray-700">Blouse Piece</span>
-                <span className="text-gray-900">{product.specifications?.blousePiece}</span>
-              </div>
-              <div className="flex justify-between py-2 border-b border-gray-200">
-                <span className="font-medium text-gray-700">Design No</span>
-                <span className="text-gray-900">{product.specifications?.designNo}</span>
-              </div>
-            </div>
-          </div>
-          <div className="mt-6 pt-6 border-t border-gray-200">
-            <p className="text-gray-700 leading-relaxed">{product.fullDescription}</p>
           </div>
         </div>
+        
+        {/* Product Info Tabs */}
+        {/* <div className="mt-12 ">
+          <ProductInfoTabs productDescription={product.fullDescription || ''} />
+        </div> */}
 
         {/* Related Products */}
         <div className="mt-12">
           <h2 className="text-2xl font-bold text-gray-900 mb-6">Related Products</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
             {relatedProducts.map((relatedProduct) => (
-              <div key={relatedProduct._id} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
-                <Link to={`/products/${relatedProduct._id}`}>
-                  <img
-                    src={relatedProduct.imageUrl}
-                    alt={relatedProduct.name}
-                    className="w-full h-48 object-contain"
-                  />
-                  <div className="p-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-lg font-bold text-red-600">
-                        ₹{relatedProduct.price.toLocaleString()}
-                      </span>
-                      <span className="text-sm text-gray-500">per metre</span>
-                    </div>
-                    <h3 className="text-sm font-medium text-gray-900 mb-1">
-                      {relatedProduct.name}
-                    </h3>
-                    <p className="text-xs text-gray-500">
-                      {relatedProduct.quantity} metres left
-                    </p>
-                  </div>
-                </Link>
-              </div>
+              <ProductCard key={relatedProduct._id} product={relatedProduct} />
             ))}
           </div>
         </div>
+
+        {/* Know your garment */}
+        <div className="mt-12">
+          {/* Assuming KnowYourGarmentCarousel is imported */}
+          <KnowYourGarment />
+        </div>
+
+
+
       </div>
+
+     
+
+
 
       {/* Enquiry Form Modal */}
       <EnquiryForm
@@ -491,6 +650,7 @@ const ProductDetailsPage: React.FC = () => {
         selectedVariant={getCurrentColor()}
         defaultQuantity={quantity}
         productImage={currentImages[selectedImage] || product.imageUrl}
+        unit={product.unit || 'meter'}
         onSubmit={handleEnquirySubmit}
       />
     </div>

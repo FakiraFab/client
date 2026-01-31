@@ -27,12 +27,13 @@ export interface ProductSpecifications {
 export interface Product {
   _id: string;
   name: string;
-  subcategory: { _id: string; name: string };
-  category: { _id: string; name: string };
+  subcategory?: { _id: string; name: string } | null;
+  category?: { _id: string; name: string } | null;
   description: string;
   price: number;
   imageUrl: string;
   quantity: number;
+  color?:string;
   options: ProductOption[];
   createdAt: string;
   updatedAt: string;
@@ -46,6 +47,7 @@ export interface Product {
   length?: string;
   blousePiece?: string;
   designNo?: string;
+  unit?: "meter" | "piece";
 }
 
 export interface Category {
@@ -105,6 +107,7 @@ export interface Reel {
   title: string;
   description?: string;
   videoUrl: string;
+  thumbnail: string;
   thumbnailUrl?: string;
   price?: number;
   isActive: boolean;
@@ -118,7 +121,8 @@ export interface Banner {
   _id: string;
   title?: string;
   description?: string;
-  image: string;
+  imageDesktop: string;
+  imageMobile?:string;
   ctaText?: string;
   ctaLink?: string;
   isActive: boolean;
@@ -133,4 +137,33 @@ export interface BannerResponse {
   currentPage: number;
   totalPages: number;
   totalItems: number;
+}
+
+export interface Blog {
+  _id: string;
+  title: string;
+  slug: string;
+  shortDescription: string;
+  content: string;
+  metaTitle?: string;
+  metaDescription?: string;
+  metaKeywords?: string[];
+  image?: string;
+  author?: string;
+  category?: 
+    | "Styling Tips" 
+    | "Product Guides" 
+    | "Traditions" 
+    | "DIY" 
+    | "Care Tips" 
+    | "Trending" 
+    | "Fabric Guide" 
+    | "Design Inspiration";
+  tags?: string[];
+  published: boolean;
+  publishedAt?: string;
+  views?: number;
+  createdAt?: string;
+  updatedAt?: string;
+  __v?: number;
 }

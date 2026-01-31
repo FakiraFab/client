@@ -16,7 +16,7 @@ export const fetchActiveBanners = async (): Promise<Banner[]> => {
     params: {
       isActive: true,
       sort: 'order',
-      limit: 10
+      limit: 20
     }
   });
   return response.data.data;
