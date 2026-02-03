@@ -1,17 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import apiClient from '../api/client';
 import ProductCard from '../components/ProductCard';
-import type { Product, ApiResponse, Enquiry } from '../types';
-import EnquiryForm from '../../src/components/EnquiryForm/EnquiryForm';
+import type { Product, ApiResponse } from '../types';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
-// import ProductInfoTabs from '../components/ProductInfoTabs/ProductInfoTabs';
+import { wishlistApi } from '../api/wishlist';
 import KnowYourGarment from '../components/KnowYourGarment/KnowYourGarment';
 import ModernProductSpecs from '../components/ModernProductSpecs/ModernProductSpecs';
 import Seo from '../components/Seo/Seo';
 import JsonLd from '../components/Seo/JsonLd';
+import { Heart } from 'lucide-react';
 
 
 const fetchProductDetails = async (productId: string | undefined): Promise<ApiResponse<Product>> => {
@@ -29,14 +30,15 @@ const fetchRelatedProducts = async (categoryId: string | undefined): Promise<Api
 
 const ProductDetailsPage: React.FC = () => {
   const { productId } = useParams<{ productId: string }>();
+  const navigate = useNavigate();
   const [selectedImage, setSelectedImage] = useState(0);
   const [selectedVariant, setSelectedVariant] = useState(-1); // Start with -1 to show primary product
   const [quantity, setQuantity] = useState(1);
   const [currentImages, setCurrentImages] = useState<string[]>([]);
-  const [isEnquiryFormOpen, setIsEnquiryFormOpen] = useState(false);
-  const [enquiryStatus, setEnquiryStatus] = useState<{ success: boolean; message: string } | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isInWishlist, setIsInWishlist] = useState(false);
+  const [wishlistLoading, setWishlistLoading] = useState(false);
   const { addToCart } = useCart();
+  const { isAuthenticated } = useAuth();
   const { showToast } = useToast();
 
   const { data: productData, isLoading, error } = useQuery({
@@ -135,16 +137,6 @@ const ProductDetailsPage: React.FC = () => {
     return product?.color || 'Default';
   };
 
-  const openEnquiryForm = () => {
-    setIsEnquiryFormOpen(true);
-    setEnquiryStatus(null); // Reset status when opening form
-  };
-
-  const closeEnquiryForm = () => {
-    setIsEnquiryFormOpen(false);
-    setEnquiryStatus(null); // Reset status when closing form
-  };
-
   const handleAddToCart = () => {
     if (!product) return;
     
@@ -159,19 +151,72 @@ const ProductDetailsPage: React.FC = () => {
     });
   };
 
-  const handleEnquirySubmit = async (enquiry: Enquiry) => {
-    setIsSubmitting(true);
+  const handleBuyNow = () => {
+    if (!product) return;
+
+    // Check if user is authenticated
+    if (!isAuthenticated) {
+      showToast({
+        type: 'info',
+        title: 'Login Required',
+        message: 'Please login to continue with checkout',
+        duration: 3000
+      });
+      navigate('/login', { state: { from: { pathname: `/products/${productId}` } } });
+      return;
+    }
+
+    // Add to cart first
+    addToCart(product, quantity, selectedVariant >= 0 ? selectedVariant : undefined, getCurrentColor());
+    
+    // Navigate to checkout
+    navigate('/checkout');
+  };
+
+  const handleWishlistToggle = async () => {
+    if (!isAuthenticated) {
+      showToast({
+        type: 'info',
+        title: 'Login Required',
+        message: 'Please login to add items to your wishlist',
+        duration: 3000
+      });
+      navigate('/login', { state: { from: { pathname: `/products/${productId}` } } });
+      return;
+    }
+
+    if (!productId) return;
+
+    setWishlistLoading(true);
     try {
-      const response = await apiClient.post('/Inquiry', enquiry);
-      if (response.data.success) {
-        setEnquiryStatus({ success: true, message: 'Enquiry submitted successfully!' });
+      if (isInWishlist) {
+        await wishlistApi.removeFromWishlist(productId);
+        setIsInWishlist(false);
+        showToast({
+          type: 'success',
+          title: 'Removed from Wishlist',
+          message: 'Item removed from your wishlist',
+          duration: 3000
+        });
       } else {
-        setEnquiryStatus({ success: false, message: 'Failed to submit enquiry. Please try again.' });
+        await wishlistApi.addToWishlist(productId);
+        setIsInWishlist(true);
+        showToast({
+          type: 'success',
+          title: 'Added to Wishlist',
+          message: 'Item added to your wishlist',
+          duration: 3000
+        });
       }
-    } catch (err) {
-      setEnquiryStatus({ success: false, message: 'An error occurred. Please try again later.' });
+    } catch (error: any) {
+      showToast({
+        type: 'error',
+        title: 'Error',
+        message: error.response?.data?.message || 'Failed to update wishlist',
+        duration: 3000
+      });
     } finally {
-      setIsSubmitting(false);
+      setWishlistLoading(false);
     }
   };
 
@@ -280,18 +325,7 @@ const ProductDetailsPage: React.FC = () => {
           />
         </>
       )}
-      {/* Success/Error Toast */}
-      {enquiryStatus && (
-        <div className={`fixed top-4 right-4 p-4 rounded-md text-white ${enquiryStatus.success ? 'bg-green-600' : 'bg-red-600'}`}>
-          {enquiryStatus.message}
-          <button
-            onClick={() => setEnquiryStatus(null)}
-            className="ml-2 text-white font-bold"
-          >
-            ×
-          </button>
-        </div>
-      )}
+      {/* Success/Error Toast - Removed as we're using ToastContext */}
 
        {/* Breadcrumb */}
       <div className="bg-white py-4 border-b">
@@ -417,45 +451,59 @@ const ProductDetailsPage: React.FC = () => {
 
           {/* Product Info & Specs - Column 2 */}
           <div className="lg:col-span-6 space-y-6">
-            {/* Product Title & Price */}
-            <div>
-              <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-1 leading-tight">{product.name}</h1>
-              
-              {/* Price Section */}
-              <div className="flex items-center space-x-3 mb-1">
-                <span className="text-2xl font-bold text-gray-900">
-                  Rs. {getCurrentPrice().toLocaleString()}
-                </span>
-                <span className="text-lg text-gray-500 line-through">
-                  Rs. {getOriginalPrice().toLocaleString()}
-                </span>
-                <span className="text-lg font-bold text-gray-900">
-                  {Math.round(((getOriginalPrice() - getCurrentPrice()) / getOriginalPrice()) * 100)}% OFF
-                </span>
-              </div>
-              
-              {/* Subtext with per-unit price */}
-              <p className="text-sm text-gray-600 mb-2">
-                (Rs. {Math.round(getCurrentPrice() / 1)} / {product.unit || 'meter'} Rs-{getOriginalPrice()})
-              </p>
-              
-              {/* Sale Tag */}
-              <div className="inline-block bg-gray-800 text-white px-3 py-1 rounded text-sm font-medium mb-4">
-                Black Friday Sale
-              </div>
-              
-              {/* Reviews & SKU Section */}
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <div className="flex text-red-700">
-                    {[...Array(5)].map((_, i) => (
-                      <span key={i} className="text-lg">★</span>
-                    ))}
-                  </div>
-                  <span className="text-sm text-gray-700">525 reviews</span>
+            {/* Product Title & Wishlist */}
+            <div className="flex items-start justify-between gap-4">
+              <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-1 leading-tight flex-1">{product.name}</h1>
+              <button
+                onClick={handleWishlistToggle}
+                disabled={wishlistLoading}
+                className={`p-2 rounded-full transition-colors flex-shrink-0 ${
+                  isInWishlist 
+                    ? 'text-red-600 bg-red-50 hover:bg-red-100' 
+                    : 'text-gray-400 bg-gray-100 hover:bg-gray-200'
+                }`}
+                title={isInWishlist ? 'Remove from wishlist' : 'Add to wishlist'}
+              >
+                <Heart 
+                  className={`h-6 w-6 ${isInWishlist ? 'fill-current' : ''}`}
+                />
+              </button>
+            </div>
+            
+            {/* Price Section */}
+            <div className="flex items-center space-x-3 mb-1">
+              <span className="text-2xl font-bold text-gray-900">
+                Rs. {getCurrentPrice().toLocaleString()}
+              </span>
+              <span className="text-lg text-gray-500 line-through">
+                Rs. {getOriginalPrice().toLocaleString()}
+              </span>
+              <span className="text-lg font-bold text-gray-900">
+                {Math.round(((getOriginalPrice() - getCurrentPrice()) / getOriginalPrice()) * 100)}% OFF
+              </span>
+            </div>
+
+            {/* Subtext with per-unit price */}
+            <p className="text-sm text-gray-600 mb-2">
+              (Rs. {Math.round(getCurrentPrice() / 1)} / {product.unit || 'meter'} Rs-{getOriginalPrice()})
+            </p>
+
+            {/* Sale Tag */}
+            <div className="inline-block bg-gray-800 text-white px-3 py-1 rounded text-sm font-medium mb-4">
+              Black Friday Sale
+            </div>
+
+            {/* Reviews & SKU Section */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <div className="flex text-red-700">
+                  {[...Array(5)].map((_, i) => (
+                    <span key={i} className="text-lg">★</span>
+                  ))}
                 </div>
-                <p className="text-sm text-gray-700 font-medium">SKU: #fakirafab{product.specifications?.designNo}</p>
+                <span className="text-sm text-gray-700">525 reviews</span>
               </div>
+              <p className="text-sm text-gray-700 font-medium">SKU: #fakirafab{product.specifications?.designNo}</p>
             </div>
 
             {/* Feature Icons Section */}
@@ -572,27 +620,28 @@ const ProductDetailsPage: React.FC = () => {
                 </button>
               </div>
             </div>
-            {/* Enquire Now Button */}
-            <button 
-              onClick={openEnquiryForm}
-              className="w-full bg-white border-2 border-gray-800 text-gray-800 py-2.5 rounded-lg font-bold text-sm hover:bg-[#7F1416] hover:text-white transition-colors"
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? 'Submitting...' : 'ENQUIRE NOW'}
-            </button>
+            
+            {/* Action Buttons */}
+            <div className="space-y-3">
+              {/* Add to Cart Button */}
+              <button 
+                onClick={handleAddToCart}
+                className="w-full bg-[#7F1416] hover:bg-gray-900 text-white py-3 rounded-lg font-bold text-sm transition-colors flex items-center justify-center space-x-3"
+              >
+                <span>ADD TO CART</span>
+                <span>:</span>
+                <span>RS. {(getCurrentPrice() * quantity).toLocaleString()}</span>
+              </button>
 
+              {/* Buy Now Button */}
+              <button 
+                onClick={handleBuyNow}
+                className="w-full bg-gray-900 hover:bg-[#7F1416] text-white py-3 rounded-lg font-bold text-sm transition-colors"
+              >
+                BUY NOW
+              </button>
 
-            {/* Add to Cart Button with Price */}
-            <button 
-              onClick={handleAddToCart}
-              className="w-full bg-[#7F1416] hover:bg-gray-900 text-white py-3 rounded-lg font-bold text-sm transition-colors flex items-center justify-center space-x-3"
-            >
-              <span>ADD TO CART</span>
-              <span>:</span>
-              <span>RS. {(getCurrentPrice() * quantity).toLocaleString()}</span>
-            </button>
-
-            {/* Share Button - Native Web Share API */}
+              {/* Share Button - Native Web Share API */}
             <button
               onClick={handleShareProduct}
               className="w-full bg-white border-2 border-gray-800 text-gray-800 py-3 rounded-lg font-bold text-sm hover:bg-gray-100 transition-colors flex items-center justify-center space-x-2"
@@ -604,6 +653,7 @@ const ProductDetailsPage: React.FC = () => {
               </span>
               <span>SHARE</span>
             </button>
+            </div>
 
             {/* Product Specs - Below all price, quantity, and buttons */}
             <div>
@@ -632,27 +682,7 @@ const ProductDetailsPage: React.FC = () => {
           {/* Assuming KnowYourGarmentCarousel is imported */}
           <KnowYourGarment />
         </div>
-
-
-
       </div>
-
-     
-
-
-
-      {/* Enquiry Form Modal */}
-      <EnquiryForm
-        isOpen={isEnquiryFormOpen}
-        onClose={closeEnquiryForm}
-        productId={productId || ''}
-        productName={product.name}
-        selectedVariant={getCurrentColor()}
-        defaultQuantity={quantity}
-        productImage={currentImages[selectedImage] || product.imageUrl}
-        unit={product.unit || 'meter'}
-        onSubmit={handleEnquirySubmit}
-      />
     </div>
   );
 };

@@ -1,9 +1,10 @@
-import  { Suspense, lazy } from 'react';
+import  { Suspense, lazy, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Header from './components/Header/Header';
 import Footer from './components/Footer/Footer';
 import ScrollToTop from './components/ScrollTop/ScrollTop';
-import { CartProvider } from './context/CartContext';
+import { CartProvider, useCart } from './context/CartContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import { ToastProvider, useToast } from './context/ToastContext';
 import { HelmetProvider } from 'react-helmet-async';
 import ToastContainer from './components/Toast/ToastContainer';
@@ -25,11 +26,57 @@ const TermsAndConditions = lazy(() => import('./pages/TermsAndConditions'));
 const BlogList = lazy(() => import('./pages/BlogList'));
 const BlogDetails = lazy(() => import('./pages/BlogDetails'));
 
+// Auth pages
+const Login = lazy(() => import('./pages/Login'));
+const Signup = lazy(() => import('./pages/Signup'));
+const VerifyEmail = lazy(() => import('./pages/VerifyEmail'));
+const ForgotPassword = lazy(() => import('./pages/ForgotPassword'));
+const ResetPassword = lazy(() => import('./pages/ResetPassword'));
+
+// Cart and Checkout
+const Cart = lazy(() => import('./pages/Cart'));
+
+// Account pages
+const Dashboard = lazy(() => import('./pages/account/Dashboard'));
+const ProfileInfo = lazy(() => import('./pages/account/ProfileInfo'));
+const AddressManagement = lazy(() => import('./pages/account/AddressManagement'));
+const OrderHistory = lazy(() => import('./pages/account/OrderHistory'));
+const OrderDetails = lazy(() => import('./pages/account/OrderDetails'));
+const Wishlist = lazy(() => import('./pages/account/Wishlist'));
+
+// Checkout pages
+const Checkout = lazy(() => import('./pages/Checkout'));
+const OrderConfirmation = lazy(() => import('./pages/OrderConfirmation'));
+
+// Protected Route
+import ProtectedRoute from './components/ProtectedRoute';
+
+// Cart merge integration component
+function CartMergeSetup() {
+  const { mergeGuestCart } = useCart();
+  const { setOnLoginCallback } = useAuth();
+
+  useEffect(() => {
+    // Set the cart merge callback on mount
+    setOnLoginCallback(async () => {
+      await mergeGuestCart();
+    });
+
+    // Cleanup: remove callback on unmount
+    return () => {
+      setOnLoginCallback(null);
+    };
+  }, [mergeGuestCart, setOnLoginCallback]);
+
+  return null;
+}
+
 function AppContent() {
   const { toasts, removeToast } = useToast();
   
   return (
     <>
+      <CartMergeSetup />
       <ScrollToTop />
       {/* Google Analytics 4 Listener for SPA page tracking */}
       {/* Detects route changes and sends page_path to GA4 */}
@@ -51,6 +98,28 @@ function AppContent() {
               <Route path ="/FAQ" element={<FaqSection/>}/>
               <Route path="/blog" element={<BlogList />} />
               <Route path="/blog/:id" element={<BlogDetails />} />
+              
+              {/* Cart */}
+              <Route path="/cart" element={<Cart />} />
+              
+              {/* Auth routes */}
+              <Route path="/login" element={<Login />} />
+              <Route path="/signup" element={<Signup />} />
+              <Route path="/verify-email" element={<VerifyEmail />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
+              
+              {/* Checkout pages - Protected */}
+              <Route path="/checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
+              <Route path="/order-confirmation/:id" element={<ProtectedRoute><OrderConfirmation /></ProtectedRoute>} />
+              
+              {/* Account pages - Protected */}
+              <Route path="/account" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+              <Route path="/account/profile" element={<ProtectedRoute><ProfileInfo /></ProtectedRoute>} />
+              <Route path="/account/addresses" element={<ProtectedRoute><AddressManagement /></ProtectedRoute>} />
+              <Route path="/account/orders" element={<ProtectedRoute><OrderHistory /></ProtectedRoute>} />
+              <Route path="/account/orders/:id" element={<ProtectedRoute><OrderDetails /></ProtectedRoute>} />
+              <Route path="/account/wishlist" element={<ProtectedRoute><Wishlist /></ProtectedRoute>} />
             </Routes>
           </Suspense>
         </main>
@@ -70,15 +139,24 @@ function App() {
   return (
     <HelmetProvider>
       <ToastProvider>
-        <CartProvider>
-          <Router>
-            <AppContent />
-            <Analytics />
-          </Router>
-        </CartProvider>
+        <AuthProvider>
+          {/* CartProvider now receives isAuthenticated prop from AuthContext */}
+          <CartProviderWrapper>
+            <Router>
+              <AppContent />
+              <Analytics />
+            </Router>
+          </CartProviderWrapper>
+        </AuthProvider>
       </ToastProvider>
     </HelmetProvider>
   );
+}
+
+// Wrapper to access auth context and pass to CartProvider
+function CartProviderWrapper({ children }: { children: React.ReactNode }) {
+  const { isAuthenticated, isLoading } = useAuth();
+  return <CartProvider isAuthenticated={isAuthenticated} isLoading={isLoading}>{children}</CartProvider>;
 }
 
 export default App;
