@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import type { ReactNode } from 'react';
 import { authApi } from '../api/auth';
 import type { User, LoginCredentials, SignupData } from '../types/auth';
@@ -13,6 +13,7 @@ interface AuthContextType {
   signup: (data: SignupData) => Promise<void>;
   logout: () => Promise<void>;
   updateProfile: (data: Partial<{ name: string; phone: string }>) => Promise<void>;
+  setOnLoginCallback: (callback: (() => Promise<void>) | null) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -20,6 +21,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const onLoginCallbackRef = useRef<(() => Promise<void>) | null>(null);
 
   // Load user from localStorage on mount
   useEffect(() => {
@@ -60,6 +62,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     loadUser();
   }, []);
 
+  const setOnLoginCallback = useCallback((callback: (() => Promise<void>) | null) => {
+    onLoginCallbackRef.current = callback;
+  }, []);
+
   const login = useCallback(async (credentials: LoginCredentials) => {
     try {
       const response = await authApi.login(credentials);
@@ -73,6 +79,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         localStorage.setItem('user', JSON.stringify(userData));
         
         setUser(userData);
+
+        // Trigger cart merge callback if set
+        if (onLoginCallbackRef.current) {
+          await onLoginCallbackRef.current();
+        }
       } else {
         throw new Error('Login failed');
       }
@@ -104,6 +115,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         localStorage.setItem('user', JSON.stringify(userData));
         
         setUser(userData);
+
+        // Trigger cart merge callback if set
+        if (onLoginCallbackRef.current) {
+          await onLoginCallbackRef.current();
+        }
       } else {
         throw new Error('OTP verification failed');
       }
@@ -126,6 +142,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         localStorage.setItem('user', JSON.stringify(userData));
         
         setUser(userData);
+
+        // Trigger cart merge callback if set
+        if (onLoginCallbackRef.current) {
+          await onLoginCallbackRef.current();
+        }
       } else {
         throw new Error('Signup failed');
       }
@@ -174,6 +195,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     signup,
     logout,
     updateProfile,
+    setOnLoginCallback,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

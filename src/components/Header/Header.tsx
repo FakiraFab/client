@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Search, Menu, X, ShoppingCart, User, LogOut, Package, MapPin, Heart } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -14,8 +14,11 @@ const Header: React.FC = () => {
   const [scrolled, setScrolled] = useState(false);
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const userMenuRef = useRef<HTMLDivElement>(null);
   const { toggleCart, getCartItemCount } = useCart();
-  const { isAuthenticated, user, logout } = useAuth();
+  const { isAuthenticated, user, logout, isLoading } = useAuth();
+
+  console.log('Auth Debug:', { isAuthenticated, isLoading, user, hasUser: !!user });
 
   useEffect(() => {
     const handleScroll = () => {
@@ -24,6 +27,23 @@ const Header: React.FC = () => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  // Handle click outside to close user menu
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+        setIsUserMenuOpen(false);
+      }
+    };
+
+    if (isUserMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isUserMenuOpen]);
 
   // Handle keyboard shortcuts
   useEffect(() => {
@@ -79,7 +99,7 @@ const Header: React.FC = () => {
   return (
     <header className={`sticky top-0 bg-white shadow-sm transition-all duration-300 z-50 ${scrolled ? 'py-2 shadow-md' : 'py-0'}`}>
       {/* Main Header */}
-      <div className="w-full max-w-full overflow-hidden">
+      <div className="w-full max-w-full">
         <div className="container mx-auto px-4 max-w-7xl">
           <div className="flex items-center justify-between py-4 relative min-h-[80px]">
             {/* Mobile Menu Button - Only visible on mobile */}
@@ -189,10 +209,18 @@ const Header: React.FC = () => {
               </button>
 
               {/* User Menu */}
-              {isAuthenticated ? (
-                <div className="relative">
+              {isLoading ? (
+                // Loading state - show a placeholder
+                <div className="p-2 text-gray-400">
+                  <User className="h-5 w-5 animate-pulse" />
+                </div>
+              ) : isAuthenticated && user ? (
+                <div className="relative" ref={userMenuRef}>
                   <button
-                    onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                    onClick={() => {
+                      console.log('User menu button clicked, current state:', isUserMenuOpen, '-> new state:', !isUserMenuOpen);
+                      setIsUserMenuOpen(!isUserMenuOpen);
+                    }}
                     className="p-2 text-gray-700 hover:text-red-700 transition-colors duration-200 flex items-center gap-1"
                     aria-label="User menu"
                   >
@@ -201,14 +229,14 @@ const Header: React.FC = () => {
                   </button>
 
                   {/* Dropdown Menu */}
+                  {console.log('Rendering dropdown check, isUserMenuOpen:', isUserMenuOpen)}
                   <AnimatePresence>
                     {isUserMenuOpen && (
                       <motion.div
                         initial={{ opacity: 0, y: -10 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -10 }}
-                        className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg py-2 z-50 border border-gray-100"
-                        onMouseLeave={() => setIsUserMenuOpen(false)}
+                        className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg py-2 z-[100] border border-gray-100"
                       >
                         <div className="px-4 py-2 border-b border-gray-100">
                           <p className="text-sm font-medium text-gray-900">{user?.name}</p>

@@ -1,10 +1,10 @@
-import  { Suspense, lazy } from 'react';
+import  { Suspense, lazy, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Header from './components/Header/Header';
 import Footer from './components/Footer/Footer';
 import ScrollToTop from './components/ScrollTop/ScrollTop';
-import { CartProvider } from './context/CartContext';
-import { AuthProvider } from './context/AuthContext';
+import { CartProvider, useCart } from './context/CartContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import { ToastProvider, useToast } from './context/ToastContext';
 import { HelmetProvider } from 'react-helmet-async';
 import ToastContainer from './components/Toast/ToastContainer';
@@ -51,11 +51,32 @@ const OrderConfirmation = lazy(() => import('./pages/OrderConfirmation'));
 // Protected Route
 import ProtectedRoute from './components/ProtectedRoute';
 
+// Cart merge integration component
+function CartMergeSetup() {
+  const { mergeGuestCart } = useCart();
+  const { setOnLoginCallback } = useAuth();
+
+  useEffect(() => {
+    // Set the cart merge callback on mount
+    setOnLoginCallback(async () => {
+      await mergeGuestCart();
+    });
+
+    // Cleanup: remove callback on unmount
+    return () => {
+      setOnLoginCallback(null);
+    };
+  }, [mergeGuestCart, setOnLoginCallback]);
+
+  return null;
+}
+
 function AppContent() {
   const { toasts, removeToast } = useToast();
   
   return (
     <>
+      <CartMergeSetup />
       <ScrollToTop />
       {/* Google Analytics 4 Listener for SPA page tracking */}
       {/* Detects route changes and sends page_path to GA4 */}
@@ -119,16 +140,23 @@ function App() {
     <HelmetProvider>
       <ToastProvider>
         <AuthProvider>
-          <CartProvider>
+          {/* CartProvider now receives isAuthenticated prop from AuthContext */}
+          <CartProviderWrapper>
             <Router>
               <AppContent />
               <Analytics />
             </Router>
-          </CartProvider>
+          </CartProviderWrapper>
         </AuthProvider>
       </ToastProvider>
     </HelmetProvider>
   );
+}
+
+// Wrapper to access auth context and pass to CartProvider
+function CartProviderWrapper({ children }: { children: React.ReactNode }) {
+  const { isAuthenticated, isLoading } = useAuth();
+  return <CartProvider isAuthenticated={isAuthenticated} isLoading={isLoading}>{children}</CartProvider>;
 }
 
 export default App;
