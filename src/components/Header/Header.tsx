@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { Search, Menu, X, ShoppingCart, User } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Search, Menu, X, ShoppingCart, User, LogOut, Package, MapPin, Heart } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import logo from "../logo.png";
 import SearchModal from '../SearchModal';
 import { useCart } from '../../context/CartContext';
+import { useAuth } from '../../context/AuthContext';
 import CartModal from '../CartModal';
 
 const Header: React.FC = () => {
@@ -12,7 +13,12 @@ const Header: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [scrolled, setScrolled] = useState(false);
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const userMenuRef = useRef<HTMLDivElement>(null);
   const { toggleCart, getCartItemCount } = useCart();
+  const { isAuthenticated, user, logout, isLoading } = useAuth();
+
+  console.log('Auth Debug:', { isAuthenticated, isLoading, user, hasUser: !!user });
 
   useEffect(() => {
     const handleScroll = () => {
@@ -21,6 +27,23 @@ const Header: React.FC = () => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  // Handle click outside to close user menu
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+        setIsUserMenuOpen(false);
+      }
+    };
+
+    if (isUserMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isUserMenuOpen]);
 
   // Handle keyboard shortcuts
   useEffect(() => {
@@ -76,7 +99,7 @@ const Header: React.FC = () => {
   return (
     <header className={`sticky top-0 bg-white shadow-sm transition-all duration-300 z-50 ${scrolled ? 'py-2 shadow-md' : 'py-0'}`}>
       {/* Main Header */}
-      <div className="w-full max-w-full overflow-hidden">
+      <div className="w-full max-w-full">
         <div className="container mx-auto px-4 max-w-7xl">
           <div className="flex items-center justify-between py-4 relative min-h-[80px]">
             {/* Mobile Menu Button - Only visible on mobile */}
@@ -164,14 +187,13 @@ const Header: React.FC = () => {
 
               {/* Wishlist Icon */}
               <Link 
-                to="/wishlist" 
+                to="/account/wishlist" 
                 className="p-2 text-gray-700 hover:text-red-700 relative transition-colors duration-200"
                 aria-label="Wishlist"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                 </svg>
-                <span className="absolute -top-1 -right-1 bg-red-700 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center min-w-[16px]">0</span>
               </Link>
 
               {/* Cart Icon */}
@@ -185,6 +207,98 @@ const Header: React.FC = () => {
                   {getCartItemCount()}
                 </span>
               </button>
+
+              {/* User Menu */}
+              {isLoading ? (
+                // Loading state - show a placeholder
+                <div className="p-2 text-gray-400">
+                  <User className="h-5 w-5 animate-pulse" />
+                </div>
+              ) : isAuthenticated && user ? (
+                <div className="relative" ref={userMenuRef}>
+                  <button
+                    onClick={() => {
+                      console.log('User menu button clicked, current state:', isUserMenuOpen, '-> new state:', !isUserMenuOpen);
+                      setIsUserMenuOpen(!isUserMenuOpen);
+                    }}
+                    className="p-2 text-gray-700 hover:text-red-700 transition-colors duration-200 flex items-center gap-1"
+                    aria-label="User menu"
+                  >
+                    <User className="h-5 w-5" />
+                    <span className="hidden md:inline text-sm">{user?.name?.split(' ')[0]}</span>
+                  </button>
+
+                  {/* Dropdown Menu */}
+                  {console.log('Rendering dropdown check, isUserMenuOpen:', isUserMenuOpen)}
+                  <AnimatePresence>
+                    {isUserMenuOpen && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg py-2 z-[100] border border-gray-100"
+                      >
+                        <div className="px-4 py-2 border-b border-gray-100">
+                          <p className="text-sm font-medium text-gray-900">{user?.name}</p>
+                          <p className="text-xs text-gray-500 truncate">{user?.email}</p>
+                        </div>
+                        <Link
+                          to="/account"
+                          className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                          onClick={() => setIsUserMenuOpen(false)}
+                        >
+                          <User className="h-4 w-4" />
+                          My Account
+                        </Link>
+                        <Link
+                          to="/account/orders"
+                          className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                          onClick={() => setIsUserMenuOpen(false)}
+                        >
+                          <Package className="h-4 w-4" />
+                          Orders
+                        </Link>
+                        <Link
+                          to="/account/addresses"
+                          className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                          onClick={() => setIsUserMenuOpen(false)}
+                        >
+                          <MapPin className="h-4 w-4" />
+                          Addresses
+                        </Link>
+                        <Link
+                          to="/account/wishlist"
+                          className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                          onClick={() => setIsUserMenuOpen(false)}
+                        >
+                          <Heart className="h-4 w-4" />
+                          Wishlist
+                        </Link>
+                        <div className="border-t border-gray-100 mt-2 pt-2">
+                          <button
+                            onClick={() => {
+                              setIsUserMenuOpen(false);
+                              logout();
+                            }}
+                            className="flex items-center gap-2 w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                          >
+                            <LogOut className="h-4 w-4" />
+                            Sign Out
+                          </button>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              ) : (
+                <Link
+                  to="/login"
+                  className="flex items-center gap-1 px-3 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-md transition-colors duration-200"
+                >
+                  <User className="h-4 w-4" />
+                  <span className="hidden md:inline">Sign In</span>
+                </Link>
+              )}
             </div>
           </div>
 
